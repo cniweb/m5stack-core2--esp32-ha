@@ -59,6 +59,24 @@ Hinweis:
 - `COM8` wurde in dieser Arbeitsumgebung erfolgreich genutzt
 - auf anderen Rechnern kann der Port anders sein
 
+## GitHub Actions
+
+Dieses Repository nutzt einen einfachen GitHub-Actions-Build-Workflow unter:
+
+- `.github/workflows/build.yml`
+
+Der Workflow:
+
+- startet bei Pushes auf `main`
+- startet bei Pull Requests
+- installiert PlatformIO
+- fuehrt `pio run` als Build-Check aus
+
+Wichtig:
+
+- der lokale REST-Preflight bleibt fuer echte Entwicklungsmaschinen aktiv
+- in GitHub Actions wird er uebersprungen, weil dort weder `include/secrets.h` noch Zugriff auf Home Assistant vorhanden sind
+
 ## Preflight
 
 Vor jedem Build validiert `scripts/ha_rest_preflight.py` automatisch:

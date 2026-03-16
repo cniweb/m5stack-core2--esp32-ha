@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(env["PROJECT_DIR"])
 SECRETS_PATH = ROOT / "include" / "secrets.h"
+SECRETS_EXAMPLE_PATH = ROOT / "include" / "secrets.example.h"
 CONFIG_PATH = ROOT / "include" / "dashboard_config.h"
 
 ALLOWED_COLLECTING_UNKNOWN = {
@@ -35,10 +36,20 @@ def fail(message):
 
 
 def run_preflight():
-    if not SECRETS_PATH.exists():
-        fail("include/secrets.h not found")
+    github_actions = str(env.get("GITHUB_ACTIONS", "")).lower() == "true"
+    if github_actions:
+        print("HA REST preflight: skipped in GitHub Actions")
+        return
 
-    secrets_text = SECRETS_PATH.read_text(encoding="utf-8")
+    if not SECRETS_PATH.exists():
+        if SECRETS_EXAMPLE_PATH.exists():
+            print("HA REST preflight: include/secrets.h not found, using secrets.example.h for local placeholder validation")
+            secrets_text = SECRETS_EXAMPLE_PATH.read_text(encoding="utf-8")
+        else:
+            fail("include/secrets.h not found")
+    else:
+        secrets_text = SECRETS_PATH.read_text(encoding="utf-8")
+
     config_text = CONFIG_PATH.read_text(encoding="utf-8")
 
     base_url = parse_define(secrets_text, "HA_BASE_URL")

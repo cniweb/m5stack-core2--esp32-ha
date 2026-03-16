@@ -10,6 +10,7 @@ Die Firmware laeuft als Arduino-Anwendung auf dem ESP32 und liest die benoetigte
 - vier Touch-Seiten auf dem Core2
 - Home-Assistant-Paket fuer stabile `sensor.core2_*`-Entities
 - REST-Preflight vor jedem Build
+- GitHub Actions Build-Check fuer Pushes und Pull Requests
 
 ## Display-Seiten
 
@@ -96,6 +97,9 @@ pio device monitor --port COM8 --baud 115200
 
 Vor jedem Build wird automatisch ein REST-Preflight ausgefuehrt.
 
+In GitHub Actions wird der Firmware-Build ebenfalls automatisch geprueft.
+Der Online-REST-Preflight wird dort bewusst uebersprungen, weil keine lokalen Secrets und kein Zugriff auf deine Home-Assistant-Instanz vorhanden sind.
+
 ### 5. Im Alltag nutzen
 
 - Der Core2 verbindet sich nach dem Start mit dem WLAN.
@@ -123,6 +127,14 @@ Vor jedem Build wird automatisch ein REST-Preflight ausgefuehrt.
 - Architektur und Datenfluss: `docs/architecture.md`
 - Arduino-REST-Ueberblick: `docs/arduino-rest.md`
 - Hinweise fuer Mitwirkende: `CONTRIBUTOR.md`
+
+## CI
+
+Fuer Pushes auf `main` und fuer Pull Requests laeuft ein GitHub-Actions-Workflow:
+
+- `.github/workflows/build.yml`
+
+Der Workflow prueft, ob die Firmware mit PlatformIO erfolgreich gebaut werden kann.
 
 ## Mitwirken
 

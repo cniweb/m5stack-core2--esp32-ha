@@ -1,87 +1,133 @@
 # M5Stack Core2 Home Assistant REST Dashboard
 
-Dieses Projekt nutzt einen `M5Stack Core2` als Touch-Display fuer Energie-Daten aus Home Assistant.
-Die Firmware laeuft als eigene Arduino-Anwendung auf dem ESP32 und liest die Werte ueber die Home-Assistant-REST-API.
+Ein `M5Stack Core2` dient in diesem Projekt als eigenstaendiges Touch-Display fuer Energie-Daten aus Home Assistant.
+Die Firmware laeuft als Arduino-Anwendung auf dem ESP32 und liest die benoetigten Werte direkt ueber die Home-Assistant-REST-API.
 
-## Funktionen
+## Kurzueberblick
 
 - Live-Anzeige fuer Solarleistung und Hausverbrauch
-- Tagessummen fuer Solar, Verbrauch, Netzbezug und Einspeisung
+- Tageswerte fuer Solar, Verbrauch, Netzbezug und Einspeisung
 - vier Touch-Seiten auf dem Core2
-- REST-Preflight vor jedem Build, damit fehlende Home-Assistant-Entities frueh erkannt werden
-- Home-Assistant-Paket zur Erzeugung der benoetigten `sensor.core2_*`-Entities
-- erfolgreich verifizierter Build-, Flash- und Monitor-Workflow fuer den Core2
+- Home-Assistant-Paket fuer stabile `sensor.core2_*`-Entities
+- REST-Preflight vor jedem Build
 
-## Seiten auf dem Display
+## Display-Seiten
 
-- `Ueber`: zwei Gauge-artige Anzeigen plus lokale Session-Historie
-- `Detail`: Live-Werte, Bilanz und Verbindungsstatus
+- `Ueber`: Gauges plus kompakte Balkenhistorie
+- `Detail`: Live-Werte, Bilanz, Peaks und Status
 - `Summen`: Tages-kWh fuer Solar und Hausverbrauch
 - `Netz`: Netzbezug und Einspeisung live plus Tageswerte
 
-## Projektstruktur
-
-- `src/main.cpp` - Arduino-Firmware fuer den Core2
-- `include/dashboard_config.h` - verwendete Home-Assistant-Entity-IDs
-- `include/secrets.example.h` - Vorlage fuer WLAN und API-Token
-- `scripts/ha_rest_preflight.py` - REST-Check vor dem Build
-- `home-assistant/packages/core2_power_history.yaml` - Home-Assistant-Paket fuer abgeleitete Sensoren
-- `docs/SETUP.md` - Schritt-fuer-Schritt-Einrichtung
-- `docs/ARCHITECTURE.md` - Architektur und Designentscheidungen
-- `docs/arduino-rest.md` - kompakte Projektdoku fuer die Arduino-Variante
-
 ## Voraussetzungen
 
+Fuer die Nutzung brauchst du:
+
 - `M5Stack Core2`
-- Home Assistant mit Zugriff auf die Basissensoren
-  - `sensor.house_energy_solar_total`
-  - `sensor.leistung_haushalt`
-- PlatformIO oder `pio.exe`
-- ein Long-Lived Access Token fuer Home Assistant
+- Home Assistant im selben Netzwerk
+- Zugriff auf die Home-Assistant-Konfiguration
+- einen `Long-Lived Access Token` fuer Home Assistant
+- PlatformIO oder eine vorhandene `pio.exe`
 
-## Schnellstart
+## Installation Und Nutzung
 
-1. Home-Assistant-Paket aus `home-assistant/packages/core2_power_history.yaml` einbinden.
-2. In Home Assistant pruefen, dass die `sensor.core2_*`-Entities vorhanden sind.
-3. `include/secrets.example.h` nach `include/secrets.h` kopieren und anpassen.
-4. Firmware mit `pio run` bauen.
-5. Auf den Core2 flashen und mit `pio device monitor` beobachten.
+### 1. Home Assistant vorbereiten
 
-## Build
+In deiner `configuration.yaml` muss Paket-Unterstuetzung aktiv sein:
+
+```yaml
+homeassistant:
+  packages: !include_dir_named packages
+```
+
+Danach die Paketdatei
+
+- `home-assistant/packages/core2_power_history.yaml`
+
+nach
+
+- `packages/core2_power_history.yaml`
+
+in dein echtes Home-Assistant-Konfigurationsverzeichnis kopieren und Home Assistant neu starten.
+
+### 2. Erwartete Entities pruefen
+
+Nach dem Neustart sollten diese Entities vorhanden sein:
+
+- `sensor.core2_solar_live`
+- `sensor.core2_house_live`
+- `sensor.core2_solar_day_energy_kwh`
+- `sensor.core2_house_day_energy_kwh`
+- `sensor.core2_grid_import_power`
+- `sensor.core2_grid_export_power`
+- `sensor.core2_grid_import_day_energy_kwh`
+- `sensor.core2_grid_export_day_energy_kwh`
+
+Hinweis:
+
+- frische `utility_meter`-Tagessensoren koennen kurz `unknown` mit `status=collecting` sein
+- das ist direkt nach einem Neustart normal
+
+### 3. Firmware konfigurieren
+
+Kopiere:
+
+- `include/secrets.example.h`
+
+nach:
+
+- `include/secrets.h`
+
+Trage dort ein:
+
+- `WIFI_SSID`
+- `WIFI_PASSWORD`
+- `HA_BASE_URL`
+- `HA_TOKEN`
+
+### 4. Bauen und flashen
 
 Typische Befehle:
 
 ```sh
 pio run
-pio run -t upload
-pio device monitor
+pio run -t upload --upload-port COM8
+pio device monitor --port COM8 --baud 115200
 ```
 
-Vor `pio run` wird automatisch ein REST-Preflight ausgefuehrt. Der Build bricht ab, wenn:
+Vor jedem Build wird automatisch ein REST-Preflight ausgefuehrt.
 
-- `include/secrets.h` fehlt
-- `HA_TOKEN` noch ein Platzhalter ist
-- Home Assistant nicht erreichbar ist
-- benoetigte `sensor.core2_*`-Entities nicht existieren
+### 5. Im Alltag nutzen
 
-Hinweis:
+- Der Core2 verbindet sich nach dem Start mit dem WLAN.
+- Anschliessend werden die `sensor.core2_*`-Entities per REST gepollt.
+- Die unteren Touch-Reiter wechseln zwischen den vier Ansichten.
 
-- frisch erzeugte Tageszaehler wie `sensor.core2_*_day_energy_kwh` koennen direkt nach einem Home-Assistant-Neustart kurz `unknown` mit Status `collecting` sein
-- diese Situation wird im Preflight nur als Warnung behandelt und blockiert den Build nicht
+## Fehlersuche
 
-## Home Assistant
+- `404` im Preflight: Paket nicht geladen oder `sensor.core2_*` fehlt
+- `401` im Preflight: Token in `include/secrets.h` ungueltig
+- `n/v` auf dem Display: zuerst seriellen Monitor pruefen
+- WLAN verbindet sich nicht: SSID, Passwort und 2.4-GHz-Verfuegbarkeit pruefen
 
-Die Firmware liest nicht direkt deine Ursprungs-Sensoren, sondern die im Paket erzeugten `sensor.core2_*`-Entities.
-Das Paket leitet fehlende Groessen wie Netzbezug, Einspeisung und Tagesenergie in Home Assistant ab.
+## Projektstruktur
 
-## Sicherheit
+- `src/main.cpp` - komplette Arduino-Firmware und UI
+- `include/dashboard_config.h` - Entity-IDs, Polling und Anzeigeparameter
+- `include/secrets.example.h` - Vorlage fuer lokale Secrets
+- `scripts/ha_rest_preflight.py` - Build-Preflight fuer Home Assistant REST
+- `home-assistant/packages/core2_power_history.yaml` - Home-Assistant-Paket fuer die benoetigten `sensor.core2_*`
 
-- `include/secrets.h` ist durch `.gitignore` ausgeschlossen
-- der REST-Zugriff nutzt einen Bearer-Token
-- fuer lokale Installationen ist HTTP moeglich; bei HTTPS sollte spaeter ein CA-Zertifikat verwendet werden
+## Weiterfuehrende Doku
 
-## Dokumentation
+- Setup im Detail: `docs/setup.md`
+- Architektur und Datenfluss: `docs/architecture.md`
+- Arduino-REST-Ueberblick: `docs/arduino-rest.md`
+- Hinweise fuer Mitwirkende: `CONTRIBUTOR.md`
 
-- Setup: `docs/SETUP.md`
-- Architektur: `docs/ARCHITECTURE.md`
-- Arduino-REST-Details: `docs/arduino-rest.md`
+## Mitwirken
+
+Wenn du am Projekt mitarbeiten willst, lies bitte zuerst:
+
+- `CONTRIBUTOR.md`
+
+Die Datei verweist auf die technische Doku und beschreibt den verifizierten Entwicklungs-Workflow.

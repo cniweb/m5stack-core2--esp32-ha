@@ -94,6 +94,11 @@ Geprueft werden:
 
 Wenn ein Check fehlschlaegt, stoppt `pio run` vor dem Kompilieren.
 
+Ausnahme:
+
+- frisch initialisierte `utility_meter`-Sensoren wie `sensor.core2_*_day_energy_kwh` duerfen voruebergehend `unknown` sein, solange ihr Status in Home Assistant auf `collecting` steht
+- in diesem Fall gibt der Preflight nur eine Warnung aus und laesst den Build weiterlaufen
+
 ## Firmware flashen
 
 Sobald `pio run` erfolgreich ist, kannst du flashen:

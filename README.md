@@ -63,6 +63,11 @@ Vor `pio run` wird automatisch ein REST-Preflight ausgefuehrt. Der Build bricht 
 - Home Assistant nicht erreichbar ist
 - benoetigte `sensor.core2_*`-Entities nicht existieren
 
+Hinweis:
+
+- frisch erzeugte Tageszaehler wie `sensor.core2_*_day_energy_kwh` koennen direkt nach einem Home-Assistant-Neustart kurz `unknown` mit Status `collecting` sein
+- diese Situation wird im Preflight nur als Warnung behandelt und blockiert den Build nicht
+
 ## Home Assistant
 
 Die Firmware liest nicht direkt deine Ursprungs-Sensoren, sondern die im Paket erzeugten `sensor.core2_*`-Entities.

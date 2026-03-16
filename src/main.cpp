@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <M5Unified.h>
 #include <WiFi.h>

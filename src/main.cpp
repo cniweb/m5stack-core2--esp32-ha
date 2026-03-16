@@ -296,15 +296,24 @@ void draw_details_page() {
   set_text(1, color_sum());
   M5.Display.setCursor(20, 96);
   M5.Display.print("Bilanz jetzt");
-  set_text(2, color_text());
-  M5.Display.setCursor(20, 114);
   if (net_balance.available) {
+    const float balance_value = fabsf(net_balance.value);
+    set_text(2, color_text());
+    M5.Display.setCursor(20, 114);
     if (net_balance.value >= 0.0f) {
-      M5.Display.printf("+%.0f W Export", net_balance.value);
+      M5.Display.printf("+%.0f W", balance_value);
+      set_text(1, color_text());
+      M5.Display.setCursor(20, 130);
+      M5.Display.print("Export");
     } else {
-      M5.Display.printf("%.0f W Bezug", net_balance.value);
+      M5.Display.printf("%.0f W", balance_value);
+      set_text(1, color_text());
+      M5.Display.setCursor(20, 130);
+      M5.Display.print("Bezug");
     }
   } else {
+    set_text(2, color_text());
+    M5.Display.setCursor(20, 114);
     M5.Display.print("n/v");
   }
 

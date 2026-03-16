@@ -130,6 +130,27 @@ void draw_label_value(int16_t x, int16_t y, const char *label, const Reading &re
   }
 }
 
+void draw_split_value(int16_t x, int16_t y, const char *label, float value, const char *unit,
+                      const char *suffix, uint16_t accent, uint8_t value_size = 1) {
+  set_text(1, accent);
+  M5.Display.setCursor(x, y);
+  M5.Display.print(label);
+
+  set_text(value_size, color_text());
+  M5.Display.setCursor(x, y + 16);
+  if (value_size > 1) {
+    M5.Display.printf("%.0f %s", value, unit);
+  } else {
+    M5.Display.printf("%.2f %s", value, unit);
+  }
+
+  if (suffix != nullptr && suffix[0] != '\0') {
+    set_text(1, color_text());
+    M5.Display.setCursor(x, y + 30);
+    M5.Display.print(suffix);
+  }
+}
+
 void draw_card(const Rect &rect, uint16_t accent) {
   M5.Display.fillRoundRect(rect.x, rect.y, rect.w, rect.h, 10, color_panel());
   M5.Display.drawRoundRect(rect.x, rect.y, rect.w, rect.h, 10, accent);
@@ -331,11 +352,8 @@ void draw_details_page() {
   set_text(1, color_warn());
   M5.Display.setCursor(174, 96);
   M5.Display.print("Session Peaks");
-  set_text(1, color_text());
-  M5.Display.setCursor(174, 114);
-  M5.Display.printf("PV max %.0f W", solar_peak);
-  M5.Display.setCursor(174, 130);
-  M5.Display.printf("Last %.0f W", house_peak);
+  draw_split_value(174, 112, "", solar_peak, "W", "PV max", color_text(), 1);
+  draw_split_value(174, 144, "", house_peak, "W", "Last", color_text(), 1);
 
   set_text(1, color_text());
   M5.Display.setCursor(20, 162);
@@ -428,10 +446,29 @@ void draw_grid_page() {
                 g_state.grid_export_power.available ? g_state.grid_export_power.value : 0.0f,
                 color_export(), "Export Last");
 
-  draw_label_value(20, 164, "Bezug heute", g_state.grid_import_day_energy, "kWh",
-                   color_import(), 1);
-  draw_label_value(174, 164, "Einspeisung", g_state.grid_export_day_energy, "kWh",
-                   color_export(), 1);
+  if (g_state.grid_import_day_energy.available) {
+    draw_split_value(20, 164, "Bezug heute", g_state.grid_import_day_energy.value, "kWh", "",
+                     color_import(), 1);
+  } else {
+    set_text(1, color_import());
+    M5.Display.setCursor(20, 164);
+    M5.Display.print("Bezug heute");
+    set_text(1, color_text());
+    M5.Display.setCursor(20, 180);
+    M5.Display.print("n/v");
+  }
+
+  if (g_state.grid_export_day_energy.available) {
+    draw_split_value(174, 164, "Einspeisung", g_state.grid_export_day_energy.value, "kWh", "heute",
+                     color_export(), 1);
+  } else {
+    set_text(1, color_export());
+    M5.Display.setCursor(174, 164);
+    M5.Display.print("Einspeisung");
+    set_text(1, color_text());
+    M5.Display.setCursor(174, 180);
+    M5.Display.print("n/v");
+  }
 }
 
 void draw_dashboard() {

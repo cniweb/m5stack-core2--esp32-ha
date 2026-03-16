@@ -1,0 +1,9 @@
+#pragma once
+
+#define WIFI_SSID "CHANGE_ME_WIFI_SSID"
+#define WIFI_PASSWORD "CHANGE_ME_WIFI_PASSWORD"
+#define HA_BASE_URL "http://homeassistant:8123"
+#define HA_TOKEN "CHANGE_ME_LONG_LIVED_ACCESS_TOKEN"
+
+#define HA_ALLOW_INSECURE_TLS 1
+#define HA_ROOT_CA_PEM ""

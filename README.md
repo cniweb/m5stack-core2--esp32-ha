@@ -10,6 +10,7 @@ Die Firmware laeuft als eigene Arduino-Anwendung auf dem ESP32 und liest die Wer
 - vier Touch-Seiten auf dem Core2
 - REST-Preflight vor jedem Build, damit fehlende Home-Assistant-Entities frueh erkannt werden
 - Home-Assistant-Paket zur Erzeugung der benoetigten `sensor.core2_*`-Entities
+- erfolgreich verifizierter Build-, Flash- und Monitor-Workflow fuer den Core2
 
 ## Seiten auf dem Display
 

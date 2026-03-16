@@ -9,7 +9,7 @@ Die Daten kommen direkt aus der Home-Assistant-REST-API.
 - Board: `m5stack-core2`
 - Framework: `arduino`
 - Display/Touch: `M5Unified`
-- REST/JSON: `HTTPClient`, `WiFiClientSecure`, `ArduinoJson`
+- REST/JSON: `HTTPClient`, `WiFiClientSecure`
 
 ## Projektdateien
 
@@ -91,14 +91,14 @@ pio run -t upload
 pio device monitor
 ```
 
-In dieser Arbeitsumgebung wurde `pio run` bereits erfolgreich ausgefuehrt, solange der Preflight in Home Assistant gueltige `sensor.core2_*`-Entities findet.
+In dieser Arbeitsumgebung wurden `pio run`, Upload auf den Core2 und der serielle Monitor bereits erfolgreich verwendet.
 
 Ergebnis des Builds:
 
 - RAM: ca. `50 KB`
 - Flash: ca. `1.09 MB`
 
-Die Upload- und Monitor-Befehle wurden noch nicht ausgefuehrt.
+Die Firmware wurde erfolgreich auf den Core2 geflasht und mit seriellen Diagnosemeldungen geprueft.
 
 ## HTTPS
 

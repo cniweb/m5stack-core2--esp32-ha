@@ -113,6 +113,8 @@ Danach den seriellen Monitor oeffnen:
 pio device monitor
 ```
 
+Der Upload auf einen angeschlossenen Core2 ueber `COM8` wurde in dieser Arbeitsumgebung bereits erfolgreich getestet.
+
 ## Touch-Seiten
 
 Die Firmware besitzt vier Touch-Reiter unten auf dem Display:

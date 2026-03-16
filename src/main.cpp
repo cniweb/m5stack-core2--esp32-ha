@@ -499,9 +499,9 @@ bool fetch_entity_state(const char *entity_id, float &result) {
     return false;
   }
 
-  StaticJsonDocument<32> filter;
+  JsonDocument filter;
   filter["state"] = true;
-  DynamicJsonDocument doc(192);
+  JsonDocument doc;
   const DeserializationError error =
       deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
   http.end();

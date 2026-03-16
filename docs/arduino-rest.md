@@ -1,6 +1,6 @@
 # Arduino REST Prototype
 
-Diese Variante ersetzt ESPHome auf dem Geraet durch eine eigene Arduino-Firmware fuer den `M5Stack Core2`.
+Diese Variante nutzt eine eigene Arduino-Firmware auf dem `M5Stack Core2`.
 Die Daten kommen direkt aus der Home-Assistant-REST-API.
 
 ## Aktueller Stand
@@ -45,7 +45,7 @@ Beispiel:
 ```cpp
 #define WIFI_SSID "MeinWLAN"
 #define WIFI_PASSWORD "geheim"
-#define HA_BASE_URL "http://homeassistant.local:8123"
+#define HA_BASE_URL "http://homeassistant:8123"
 #define HA_TOKEN "eyJ..."
 ```
 
@@ -58,14 +58,30 @@ Die Firmware besitzt vier Touch-Seiten:
 - `Summen`: Tages-kWh fuer Solar und Verbrauch
 - `Netz`: Netzbezug und Einspeisung live und als Tageswerte
 
-## Wichtige Unterschiede zu ESPHome
+Die ausfuehrliche Einrichtung ist in `docs/SETUP.md` beschrieben.
+
+## Architekturhinweise
 
 - keine native Home-Assistant-API, sondern REST-Polling
 - Token-Verwaltung liegt in der Firmware
 - Historie auf der Uebersichtsseite ist lokal und nur fuer die laufende Session
-- Tages-kWh kommen weiterhin aus Home Assistant, nicht aus lokaler Berechnung auf dem Display
+- Tages-kWh kommen aus Home Assistant und nicht aus lokaler Berechnung auf dem Display
+- Netzbezug und Einspeisung werden aktuell im HA-Paket aus Solar- und Hausleistung abgeleitet
+
+Die ausfuehrliche Architektur steht in `docs/ARCHITECTURE.md`.
 
 ## Build und Flash
+
+Vor jedem Build fuehrt PlatformIO jetzt automatisch einen kleinen REST-Preflight aus.
+
+Geprueft werden:
+
+- `HA_BASE_URL` und `HA_TOKEN` aus `include/secrets.h`
+- die acht erwarteten `sensor.core2_*`-Entities aus `include/dashboard_config.h`
+- ob jeder Sensor per `/api/states/<entity_id>` erreichbar ist
+- ob der Rueckgabewert nicht `unknown` oder `unavailable` ist
+
+Wenn einer dieser Checks fehlschlaegt, bricht der Build vor dem Kompilieren ab.
 
 Typische Befehle waeren:
 
@@ -75,7 +91,7 @@ pio run -t upload
 pio device monitor
 ```
 
-In dieser Arbeitsumgebung wurde `pio run` bereits erfolgreich ausgefuehrt.
+In dieser Arbeitsumgebung wurde `pio run` bereits erfolgreich ausgefuehrt, solange der Preflight in Home Assistant gueltige `sensor.core2_*`-Entities findet.
 
 Ergebnis des Builds:
 
@@ -96,4 +112,5 @@ Die Vorlage unterstuetzt HTTP und HTTPS.
 1. `include/secrets.h` anlegen
 2. Home-Assistant-Paket aktivieren und die `sensor.core2_*`-Entities pruefen
 3. Projekt lokal mit PlatformIO bauen
-4. bei Bedarf echte Tages- oder Stundenhistorie ueber weitere REST-Endpunkte nachziehen
+4. danach auf den Core2 flashen
+5. bei Bedarf echte Tages- oder Stundenhistorie ueber weitere REST-Endpunkte nachziehen

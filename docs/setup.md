@@ -1,116 +1,131 @@
 # Setup
 
+## Ziel
+
+Diese Anleitung beschreibt die Einrichtung der Arduino-REST-Variante fuer das `M5Stack Core2` Display.
+Die Firmware liest Daten direkt aus Home Assistant ueber die REST-API.
+
 ## Voraussetzungen
 
-- Home Assistant laeuft bereits
-- ESPHome ist in Home Assistant installiert oder separat verfuegbar
-- der `M5Stack Core2 V1.1` ist per USB anschliessbar
-- die benoetigten Home-Assistant-Sensoren fuer Solar und Verbrauch existieren bereits
+- Home Assistant laeuft im Netzwerk
+- `M5Stack Core2` ist per USB anschliessbar
+- PlatformIO ist installiert
+- die Basissensoren in Home Assistant existieren
+  - `sensor.house_energy_solar_total`
+  - `sensor.leistung_haushalt`
+- optional fuer spaetere Erweiterungen
+  - `sensor.stromverbrauch_haushalt_stundlich`
 
-## Empfohlene Home-Assistant-Entitaeten
+## Home Assistant vorbereiten
 
-Passe diese Beispielnamen an dein System an:
+Kopiere `home-assistant/packages/core2_power_history.yaml` in dein Home-Assistant-Konfigurationsverzeichnis nach `packages/core2_power_history.yaml`.
 
-- `sensor.house_energy_solar_total`
-- `sensor.leistung_haushalt`
-- `sensor.stromverbrauch_haushalt_stundlich` optional fuer spaetere Buckets
+Aktiviere in `configuration.yaml` die Paket-Unterstuetzung:
 
-Falls du andere Entitaetsnamen hast, muessen nur die Referenzen in `esphome/core2-dashboard.yaml` angepasst werden.
-Die fehlenden Tagesenergie-Sensoren werden im Home-Assistant-Paket jetzt aus den Leistungssensoren abgeleitet.
-
-## Historie vorbereiten
-
-Fuer die erste Version gibt es zwei sinnvolle Wege:
-
-### Einfacher Start
-
-Nutze 24 Stunden-Buckets fuer den aktuellen Tag.
-
-Vorteile:
-
-- leicht zu verstehen
-- wenig UI-Komplexitaet
-- gut auf 320x240 darstellbar
-
-### Feinerer Verlauf
-
-Nutze 96 Buckets mit 15 Minuten.
-
-Vorteile:
-
-- genauerer Tagesverlauf
-- bessere Sichtbarkeit von Lastspitzen und PV-Schwankungen
-
-Nachteil:
-
-- hoeherer Pflegeaufwand in Home Assistant und in der UI
-
-## ESPHome-Datei verwenden
-
-Die Datei `esphome/core2-dashboard.yaml` ist als Startpunkt gedacht.
-
-Vor dem ersten Flashen musst du mindestens diese Werte anpassen:
-
-- WLAN-Zugangsdaten
-- optional spaeter `!secret`-Referenzen einfuehren
-- optional `api`- und `ota`-Schluessel ergaenzen
-- die verwendeten Home-Assistant-Entity-IDs
-
-Die aktuelle Vorlage nutzt absichtlich einfache Platzhalter-Strings statt `!secret`, damit die Datei ohne YAML-Tag-Sonderfaelle direkt lesbar und leicht anpassbar bleibt.
-
-## Flashen
-
-Wenn ESPHome lokal installiert ist, sind typische Befehle:
-
-```sh
-"C:\Users\Admin\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts\esphome.exe" config esphome/core2-dashboard.yaml
-"C:\Users\Admin\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts\esphome.exe" run esphome/core2-dashboard.yaml
+```yaml
+homeassistant:
+  packages: !include_dir_named packages
 ```
 
-Die Konfiguration wurde mit deiner lokalen ESPHome-Installation bereits erfolgreich validiert.
+Danach Home Assistant neu starten.
 
-Dabei wurden nur diese hardwaretypischen Hinweise ausgegeben:
+## Erwartete Entities
 
-- `GPIO5` ist ein Strapping-Pin
-- `GPIO15` ist ein Strapping-Pin
+Nach dem Neustart sollten diese Entities vorhanden sein:
 
-Das ist beim Core2 erwartbar, weil diese Pins laut Board-Layout fuer das Display genutzt werden.
+- `sensor.core2_solar_live`
+- `sensor.core2_house_live`
+- `sensor.core2_solar_day_energy_kwh`
+- `sensor.core2_house_day_energy_kwh`
+- `sensor.core2_grid_import_power`
+- `sensor.core2_grid_export_power`
+- `sensor.core2_grid_import_day_energy_kwh`
+- `sensor.core2_grid_export_day_energy_kwh`
 
-## Home Assistant anbinden
+Wenn diese Entities fehlen, wird der Build spaeter durch den REST-Preflight absichtlich gestoppt.
 
-Die Live-Werte kommen ueber `sensor.homeassistant` in das Display.
-Fuer die Historie gibt es zwei Startoptionen:
+## Secrets anlegen
 
-- mehrere numerische Helper-Sensoren, je einer pro Bucket
-- ein Textsensor mit kommagetrennter oder JSON-codierter Liste, die spaeter vom ESP verarbeitet wird
+Kopiere `include/secrets.example.h` nach `include/secrets.h`.
 
-Fuer einen schnellen Start ist je Bucket ein Sensor am unkompliziertesten.
+Trage mindestens diese Werte ein:
 
-Fuer deine aktuelle Installation gilt jetzt als Default:
+- `WIFI_SSID`
+- `WIFI_PASSWORD`
+- `HA_BASE_URL`
+- `HA_TOKEN`
 
-- Solar live aus `sensor.house_energy_solar_total`
-- Hausverbrauch live aus `sensor.leistung_haushalt`
-- Netzbezug und Einspeisung werden aus Solar minus Hausverbrauch abgeleitet
-- Tages-kWh werden per `integration` plus `utility_meter` in Home Assistant erzeugt
+Beispiel:
 
-Wichtig: Diese Netz-Ableitung ist korrekt fuer eine einfache Bilanz ohne separaten Batteriespeicher. Falls spaeter Batterie oder getrennte Zaehler dazukommen, sollten die Netzsensoren auf echte Zaehlerwerte umgestellt werden.
+```cpp
+#pragma once
+
+#define WIFI_SSID "MeinWLAN"
+#define WIFI_PASSWORD "geheim"
+#define HA_BASE_URL "http://homeassistant:8123"
+#define HA_TOKEN "eyJ..."
+
+#define HA_ALLOW_INSECURE_TLS 1
+#define HA_ROOT_CA_PEM ""
+```
+
+`include/secrets.h` ist in `.gitignore` eingetragen und wird nicht committed.
+
+## Build
+
+Typische Befehle:
+
+```sh
+pio run
+pio run -t upload
+pio device monitor
+```
+
+## REST-Preflight
+
+Vor jedem Build fuehrt `scripts/ha_rest_preflight.py` automatisch einen Test gegen Home Assistant aus.
+
+Geprueft werden:
+
+- Erreichbarkeit von `HA_BASE_URL`
+- Gueltigkeit des Bearer-Tokens
+- Erreichbarkeit aller benoetigten `sensor.core2_*`-Entities
+- gueltiger `state` statt `unknown` oder `unavailable`
+
+Wenn ein Check fehlschlaegt, stoppt `pio run` vor dem Kompilieren.
+
+## Firmware flashen
+
+Sobald `pio run` erfolgreich ist, kannst du flashen:
+
+```sh
+pio run -t upload
+```
+
+Danach den seriellen Monitor oeffnen:
+
+```sh
+pio device monitor
+```
 
 ## Touch-Seiten
 
-Das Display besitzt jetzt vier Touch-Reiter im unteren Bereich:
+Die Firmware besitzt vier Touch-Reiter unten auf dem Display:
 
-- `Uebersicht`: Gauges plus kompakte Tagesbalken
-- `Details`: Live-Werte, aktuelle Bilanz, Peaks und Systemstatus
-- `Summen`: Tages-kWh fuer Solar und Verbrauch sowie Spitzenwerte
-- `Netz`: aktueller Netzbezug, aktuelle Einspeisung und Tageswerte fuer beide Richtungen
+- `Ueber`
+- `Detail`
+- `Summen`
+- `Netz`
 
-Die Navigation erfolgt ueber die vier Touch-Flaechen am unteren Rand des Displays.
+## Fehlersuche
 
-## Naechster sinnvoller Schritt
+- `404` im Preflight bedeutet meist: die `sensor.core2_*`-Entities existieren noch nicht in Home Assistant
+- `401` bedeutet meist: der Token in `include/secrets.h` ist ungueltig
+- keine Verbindung bedeutet meist: `HA_BASE_URL` oder Netzwerk stimmen nicht
+- wenn Home Assistant per HTTPS arbeitet, sollte spaeter `HA_ROOT_CA_PEM` statt `HA_ALLOW_INSECURE_TLS` verwendet werden
 
-1. echte Entity-IDs eintragen
-2. zuerst nur Live-Gauges testen
-3. danach Summensensoren fuer `kWh` pruefen
-4. danach Netzbezug- und Einspeise-Sensoren pruefen
-5. anschliessend Stundenbalken aus Home Assistant nachziehen
-6. spaeter auf 15-Minuten-Buckets erweitern
+## Naechste Ausbaustufen
+
+1. echte stunden- oder viertelstundenbasierte Historie ueber REST nachziehen
+2. lokale Caching-Strategie verbessern
+3. zusaetzliche Seiten fuer Woche, Monatswerte oder Batterie ergaenzen

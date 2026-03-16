@@ -1,134 +1,142 @@
-# Architektur
+# Architecture
 
-## Ziel
+## Zielbild
 
-Dieses Projekt nutzt einen `M5Stack Core2 V1.1` als kompaktes Wand- oder Tischdisplay fuer Energiedaten aus Home Assistant.
-Die Anzeige soll zwei Dinge gleichzeitig leisten:
+Das Projekt stellt Energie-Daten aus Home Assistant auf einem `M5Stack Core2` dar.
+Die Anzeige fokussiert sich auf:
 
-- aktuelle Solarleistung und aktuellen Hausverbrauch klar und schnell erfassbar zeigen
-- den Tagesverlauf beider Werte als einfache historische Visualisierung darstellen
+- aktuelle Solarleistung
+- aktuellen Hausverbrauch
+- Netzbezug und Einspeisung
+- Tagessummen fuer Energiefluesse
 
-## Empfohlene Architektur
+## Architekturuebersicht
 
-Die robusteste Startarchitektur ist:
+Die aktuelle Architektur trennt Datenaufbereitung und Darstellung klar:
 
 1. `Home Assistant` bleibt die zentrale Datenquelle.
-2. `ESPHome` laeuft auf dem Core2 und rendert nur die Anzeige.
-3. Historische Tageswerte werden in `Home Assistant` in feste Zeit-Buckets aufgeteilt.
-4. Der Core2 liest nur aktuelle Werte plus vorberechnete Buckets und zeichnet daraus Gauge und Balken.
+2. `home-assistant/packages/core2_power_history.yaml` erzeugt abgeleitete `sensor.core2_*`-Entities.
+3. Die Arduino-Firmware auf dem Core2 liest diese Werte ueber die REST-API.
+4. Das Display rendert die Werte lokal und verwaltet Touch-Navigation sowie Session-Historie.
 
-Das ist fuer dieses Projekt besser als lokale Historie auf dem ESP32, weil:
+## Warum Arduino + REST
 
-- der Verlauf nach einem Neustart des Core2 nicht verloren geht
-- die Zeitlogik nicht auf dem Mikrocontroller gepflegt werden muss
-- Home Assistant bereits Recorder, Statistik und Automations-Logik mitbringt
-- das Display dadurch schlank und reaktiv bleibt
+Diese Branch-Variante nutzt absichtlich keine ESPHome-Firmware auf dem Geraet.
+Ziele dieser Entscheidung:
 
-## Anzeigenkonzept
+- volle Kontrolle ueber Rendering und Touch-Logik
+- direkter Zugriff auf die Home-Assistant-REST-API
+- geringere Abhaengigkeit von YAML-basierten Anzeige-Workflows
+- gute Basis fuer spaetere UI- oder Protokoll-Experimente
 
-Geplant ist eine Hauptseite mit zwei Bereichen:
-
-- oben zwei Gauge-artige Anzeigen fuer aktuelle Werte
-  - Solarleistung in Watt
-  - Hausverbrauch in Watt
-- unten zwei kompakte Balkenreihen fuer den aktuellen Tag
-  - Solar-Tagesverlauf
-  - Verbrauchs-Tagesverlauf
-
-Fuer ESPHome/LVGL ist die praktischste Umsetzung:
-
-- `meter` plus `label` fuer aktuelle Werte
-- mehrere vertikale `bar`-Widgets fuer den Verlauf
-
-ESPHome bietet in der dokumentierten Form keinen echten Balkendiagramm-Widget mit Achsen und Spaltenserie fuer diesen Anwendungsfall. Daher ist eine Reihe einzelner LVGL-Bars fuer den Tagesverlauf die verlässlichste Loesung.
-
-## Datenmodell
-
-### Live-Werte
-
-Diese Sensoren kommen direkt aus Home Assistant via `sensor.homeassistant`:
-
-- aktuelle Solarleistung, z. B. `sensor.solar_power`
-- aktueller Hausverbrauch, z. B. `sensor.house_power`
-
-### Historie
-
-Empfohlen sind `15-Minuten-Buckets` fuer den aktuellen Tag:
-
-- 96 Werte pro Tag fuer Solar
-- 96 Werte pro Tag fuer Verbrauch
-
-Fuer eine erste Version kann man das auf 24 Balken vereinfachen:
-
-- 24 Buckets mit je einer Stunde
-
-Das reduziert UI-Aufwand und ist auf 320x240 sehr gut lesbar.
-
-## Verantwortlichkeiten
+## Rollen der Komponenten
 
 ### Home Assistant
 
-- stellt Live-Sensoren bereit
-- aggregiert Tageswerte in feste Zeitfenster
-- setzt die Tageshistorie um Mitternacht zurueck
-- stellt vorberechnete Werte als Sensoren oder Text-Payload bereit
+- liefert Basissensoren fuer Solar und Hausverbrauch
+- leitet Netzbezug und Einspeisung aus den Basissensoren ab
+- integriert Leistung zu Energie
+- bildet Tageswerte mit `utility_meter`
+- stellt fertige `sensor.core2_*`-Entities fuer das Display bereit
 
-### ESPHome auf dem Core2
+### Arduino-Firmware auf dem Core2
 
-- verbindet sich per WLAN und API mit Home Assistant
-- initialisiert Stromversorgung, Display und Touch
-- aktualisiert Gauges fuer Live-Werte
-- zeichnet Tagesbalken aus vorberechneten Bucket-Werten
-- stellt optional Touch-Navigation fuer weitere Seiten bereit
+- verbindet sich mit WLAN
+- authentifiziert sich mit Bearer-Token an Home Assistant
+- pollt REST-Endpunkte in festen Intervallen
+- rendert die UI mit `M5Unified`
+- verwaltet Touch-Reiter und lokale Session-Historie
 
-## Hardware-relevante Punkte
+## Datenfluss
 
-Aus der recherchierten Core2/ESPHome-Dokumentation ergeben sich diese wichtigen Punkte:
+### Eingangs-Sensoren in Home Assistant
 
-- Displaymodell fuer ESPHome: `mipi_spi` mit `model: M5CORE2`
-- Touchscreen: `ft63x6`
-- der Power-Management-Baustein `AXP2101` ist fuer Core2 V1.1 wesentlich
-- fuer den AXP2101 wird in der verfuegbaren ESPHome-Loesung der `arduino`-Framework benoetigt
-- PSRAM sollte aktiviert werden
+- `sensor.house_energy_solar_total`
+- `sensor.leistung_haushalt`
 
-Wichtige Pins:
+### Abgeleitete Sensoren im Paket
 
-- SPI CLK `GPIO18`
-- SPI MOSI `GPIO23`
-- SPI MISO `GPIO38`
-- Display CS `GPIO5`
-- Display DC `GPIO15`
-- I2C SDA `GPIO21`
-- I2C SCL `GPIO22`
-- Touch Interrupt `GPIO39`
+- `sensor.core2_solar_live`
+- `sensor.core2_house_live`
+- `sensor.core2_grid_import_power`
+- `sensor.core2_grid_export_power`
+- `sensor.core2_solar_day_energy_kwh`
+- `sensor.core2_house_day_energy_kwh`
+- `sensor.core2_grid_import_day_energy_kwh`
+- `sensor.core2_grid_export_day_energy_kwh`
 
-## UI-Richtlinien
+### REST-Abruf auf dem Core2
 
-- Solar in warmen Gelb-/Orange-Toenen
-- Hausverbrauch in kuehlen Blau-/Cyan-Toenen
-- grosse Zahlenwerte in der oberen Haelfte
-- Balken unten mit gleicher Skala pro Reihe
-- keine Ueberfrachtung auf der ersten Seite
+Die Firmware verwendet pro Entity einen Aufruf gegen:
 
-## Ausbaustufen
+- `/api/states/<entity_id>`
 
-### V1
+mit:
 
-- WLAN, API, OTA
-- zwei Live-Gauges
-- zwei Tagesbalkenreihen
-- Touch-Reiter fuer Uebersicht, Details, Summen und Netz
-- Statusanzeige fuer Verbindung und Uhrzeit
+- `Authorization: Bearer <token>`
+- `Content-Type: application/json`
 
-### V2
+## Firmware-Aufbau
 
-- Touch-Seiten fuer Details
-- Batterie- und WLAN-Anzeige
-- Nachtmodus oder adaptive Helligkeit
-- Tagesertrag und Tagesverbrauch als Summenwerte
+### Konfiguration
 
-### V3
+- `include/dashboard_config.h` enthaelt Polling-Intervalle, Skalierung und Entity-IDs
+- `include/secrets.h` enthaelt WLAN und Home-Assistant-Zugangsdaten
 
-- mehrere Ansichten wie Woche oder Netzbezug
-- Alarme bei hoher Last oder geringer PV-Leistung
-- optionale lokale Touch-Bedienung fuer Seitenwechsel
+### Laufzeit
+
+- Polling-Intervall fuer REST-Daten: `15s`
+- lokales History-Sampling: `5min`
+- lokale History-Laenge: `12` Werte
+
+### Anzeige
+
+- vier Seiten
+  - `Ueber`
+  - `Detail`
+  - `Summen`
+  - `Netz`
+- Gauges und Karten werden direkt mit `M5.Display` gezeichnet
+- die Historie auf der Uebersichtsseite ist nur eine lokale Session-Historie und kein echter Tagesverlauf aus Home Assistant
+
+## Build-Sicherheit
+
+Vor jedem Build wird ein Preflight ausgefuehrt.
+
+Der Hook in `platformio.ini` startet `scripts/ha_rest_preflight.py` und prueft:
+
+- ob `include/secrets.h` vorhanden ist
+- ob `HA_TOKEN` kein Platzhalter mehr ist
+- ob Home Assistant erreichbar ist
+- ob alle benoetigten `sensor.core2_*`-Entities existieren und einen brauchbaren Zustand liefern
+
+Dadurch scheitert ein Build frueh, wenn die Backend-Seite noch nicht korrekt vorbereitet ist.
+
+## Designentscheidungen
+
+### Warum abgeleitete Sensoren in Home Assistant statt direkt im Code
+
+- weniger Logik im Mikrocontroller
+- klarere Verantwortlichkeiten
+- bessere Wiederverwendbarkeit in Home Assistant selbst
+- einfacherer Austausch der Firmware, solange die `sensor.core2_*`-Schnittstelle stabil bleibt
+
+### Warum lokale Session-Historie statt kompletter Tageshistorie per REST
+
+- einfacher Startpunkt fuer den Prototyp
+- geringe REST-Last
+- wenig RAM- und Implementierungsaufwand auf dem ESP32
+
+## Grenzen der aktuellen Version
+
+- keine echte historische Tageskurve aus Home Assistant
+- Polling statt push-basierter Updates
+- Netzbezug und Einspeisung sind aus Solar und Hausverbrauch abgeleitet
+- keine Beruecksichtigung eines Batteriespeichers in der Energiebilanz
+
+## Sinnvolle Weiterentwicklungen
+
+1. echte Stunden- oder 15-Minuten-Historie aus Home Assistant abrufen
+2. REST durch WebSocket oder MQTT ergaenzen
+3. Netzsensoren auf echte Zaehlerdaten umstellen
+4. weitere Seiten fuer Woche, Batterie oder Wetter ergaenzen

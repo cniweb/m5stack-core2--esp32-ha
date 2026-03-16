@@ -57,7 +57,7 @@ sensor:
     unique_id: core2_solar_energy_total
     unit_time: h
     unit_prefix: k
-    round: 3
+    round: 5
     method: trapezoidal
 
   - platform: integration

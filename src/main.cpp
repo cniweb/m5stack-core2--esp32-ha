@@ -460,32 +460,39 @@ bool is_valid_state_text(const char *value) {
 
 bool fetch_entity_state(const char *entity_id, float &result) {
   if (entity_id == nullptr || entity_id[0] == '\0' || WiFi.status() != WL_CONNECTED) {
+    if (entity_id != nullptr && entity_id[0] != '\0' && WiFi.status() != WL_CONNECTED) {
+      Serial.printf("[REST] skip %s, WiFi offline\n", entity_id);
+    }
     return false;
   }
 
   const String url = String(HA_BASE_URL) + "/api/states/" + entity_id;
   HTTPClient http;
   int status_code = -1;
+  const bool use_https = String(HA_BASE_URL).startsWith("https://");
+  WiFiClient client;
+  WiFiClientSecure secure_client;
 
-  if (String(HA_BASE_URL).startsWith("https://")) {
-    WiFiClientSecure client;
+  if (use_https) {
     if (HA_ALLOW_INSECURE_TLS) {
-      client.setInsecure();
+      secure_client.setInsecure();
     } else if (strlen(HA_ROOT_CA_PEM) > 0) {
-      client.setCACert(HA_ROOT_CA_PEM);
+      secure_client.setCACert(HA_ROOT_CA_PEM);
     } else {
       g_last_error = "TLS ohne CA";
+      Serial.printf("[REST] %s failed: %s\n", entity_id, g_last_error.c_str());
       return false;
     }
 
-    if (!http.begin(client, url)) {
+    if (!http.begin(secure_client, url)) {
       g_last_error = "HTTP begin fehl";
+      Serial.printf("[REST] %s failed: %s\n", entity_id, g_last_error.c_str());
       return false;
     }
   } else {
-    WiFiClient client;
     if (!http.begin(client, url)) {
       g_last_error = "HTTP begin fehl";
+      Serial.printf("[REST] %s failed: %s\n", entity_id, g_last_error.c_str());
       return false;
     }
   }
@@ -495,29 +502,38 @@ bool fetch_entity_state(const char *entity_id, float &result) {
   status_code = http.GET();
   if (status_code != 200) {
     g_last_error = "REST " + String(status_code);
+    Serial.printf("[REST] %s failed: %s\n", entity_id, g_last_error.c_str());
     http.end();
     return false;
   }
 
-  JsonDocument filter;
-  filter["state"] = true;
-  JsonDocument doc;
-  const DeserializationError error =
-      deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
+  const String body = http.getString();
   http.end();
 
-  if (error) {
-    g_last_error = "JSON Fehler";
-    return false;
-  }
-
-  const char *state = doc["state"] | nullptr;
-  if (!is_valid_state_text(state)) {
+  const String state_token = "\"state\":\"";
+  const int state_start = body.indexOf(state_token);
+  if (state_start < 0) {
     g_last_error = "State fehlt";
+    Serial.printf("[REST] %s failed: %s (token)\n", entity_id, g_last_error.c_str());
     return false;
   }
 
-  result = strtof(state, nullptr);
+  const int value_start = state_start + state_token.length();
+  const int value_end = body.indexOf('"', value_start);
+  if (value_end < 0) {
+    g_last_error = "State fehlt";
+    Serial.printf("[REST] %s failed: %s (end)\n", entity_id, g_last_error.c_str());
+    return false;
+  }
+
+  const String state = body.substring(value_start, value_end);
+  if (!is_valid_state_text(state.c_str())) {
+    g_last_error = "State fehlt";
+    Serial.printf("[REST] %s failed: %s (%s)\n", entity_id, g_last_error.c_str(), state.c_str());
+    return false;
+  }
+
+  result = strtof(state.c_str(), nullptr);
   return true;
 }
 
@@ -553,6 +569,7 @@ void sample_history() {
 }
 
 void refresh_data() {
+  Serial.println("[REST] refresh start");
   bool any_success = false;
   any_success |= update_reading(g_state.solar_power);
   delay(100);
@@ -573,6 +590,13 @@ void refresh_data() {
   if (any_success) {
     g_last_success_ms = millis();
     g_last_error = "";
+    Serial.printf("[REST] refresh ok solar=%.2fW house=%.2fW import=%.2fW export=%.2fW\n",
+                  g_state.solar_power.available ? g_state.solar_power.value : -1.0f,
+                  g_state.house_power.available ? g_state.house_power.value : -1.0f,
+                  g_state.grid_import_power.available ? g_state.grid_import_power.value : -1.0f,
+                  g_state.grid_export_power.available ? g_state.grid_export_power.value : -1.0f);
+  } else {
+    Serial.printf("[REST] refresh failed: %s\n", g_last_error.c_str());
   }
   g_needs_redraw = true;
 }
@@ -582,11 +606,18 @@ void ensure_wifi() {
     return;
   }
 
+  Serial.printf("[WiFi] connecting to %s\n", WIFI_SSID);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   const uint32_t started = millis();
   while (WiFi.status() != WL_CONNECTED && (millis() - started) < 15000) {
     delay(250);
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.printf("[WiFi] connected, ip=%s rssi=%d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+  } else {
+    Serial.printf("[WiFi] connect failed, status=%d\n", WiFi.status());
   }
 
   g_needs_redraw = true;
@@ -614,6 +645,7 @@ void setup() {
   config.clear_display = true;
   config.serial_baudrate = 115200;
   M5.begin(config);
+  Serial.println("[BOOT] Core2 REST dashboard starting");
 
   M5.Display.setRotation(1);
   M5.Display.setBrightness(128);

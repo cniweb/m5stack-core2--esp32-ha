@@ -1,0 +1,117 @@
+# Beispielpaket fuer Home Assistant
+#
+# Dieses Paket ist jetzt auf die bekannten Entity-IDs zugeschnitten und leitet
+# fehlende Tageswerte direkt in Home Assistant ab.
+#
+# Verwendete echte Quellsensoren:
+# - sensor.house_energy_solar_total              (W)
+# - sensor.leistung_haushalt                     (W)
+# - sensor.stromverbrauch_haushalt_stundlich     (Wh, optional nur zur Referenz)
+#
+# Annahme fuer Netzbezug/Einspeisung:
+# - Netzbezug = max(Hausleistung - Solarleistung, 0)
+# - Einspeisung = max(Solarleistung - Hausleistung, 0)
+#
+# Diese Ableitung ist gut fuer eine erste Version, solange kein Batteriespeicher
+# oder eine komplexere Energiebilanz dazwischen liegt.
+
+template:
+  - sensor:
+      - name: "Core2 Solar Live"
+        unique_id: core2_solar_live
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+        state: "{{ states('sensor.house_energy_solar_total') | float(0) }}"
+
+      - name: "Core2 House Live"
+        unique_id: core2_house_live
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+        state: "{{ states('sensor.leistung_haushalt') | float(0) }}"
+
+      - name: "Core2 Grid Import Power"
+        unique_id: core2_grid_import_power
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+        state: >-
+          {% set house = states('sensor.leistung_haushalt') | float(0) %}
+          {% set solar = states('sensor.house_energy_solar_total') | float(0) %}
+          {{ [house - solar, 0] | max }}
+
+      - name: "Core2 Grid Export Power"
+        unique_id: core2_grid_export_power
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+        state: >-
+          {% set house = states('sensor.leistung_haushalt') | float(0) %}
+          {% set solar = states('sensor.house_energy_solar_total') | float(0) %}
+          {{ [solar - house, 0] | max }}
+
+sensor:
+  - platform: integration
+    source: sensor.core2_solar_live
+    name: Core2 Solar Energy Total
+    unique_id: core2_solar_energy_total
+    unit_time: h
+    unit_prefix: k
+    round: 3
+    method: trapezoidal
+
+  - platform: integration
+    source: sensor.core2_house_live
+    name: Core2 House Energy Total
+    unique_id: core2_house_energy_total
+    unit_time: h
+    unit_prefix: k
+    round: 3
+    method: trapezoidal
+
+  - platform: integration
+    source: sensor.core2_grid_import_power
+    name: Core2 Grid Import Energy Total
+    unique_id: core2_grid_import_energy_total
+    unit_time: h
+    unit_prefix: k
+    round: 3
+    method: trapezoidal
+
+  - platform: integration
+    source: sensor.core2_grid_export_power
+    name: Core2 Grid Export Energy Total
+    unique_id: core2_grid_export_energy_total
+    unit_time: h
+    unit_prefix: k
+    round: 3
+    method: trapezoidal
+
+utility_meter:
+  core2_solar_day_energy_kwh:
+    source: sensor.core2_solar_energy_total
+    cycle: daily
+
+  core2_house_day_energy_kwh:
+    source: sensor.core2_house_energy_total
+    cycle: daily
+
+  core2_grid_import_day_energy_kwh:
+    source: sensor.core2_grid_import_energy_total
+    cycle: daily
+
+  core2_grid_export_day_energy_kwh:
+    source: sensor.core2_grid_export_energy_total
+    cycle: daily
+
+# Fuer eine erste UI kann man Stunden-Buckets spaeter als eigene Sensoren
+# modellieren. Mit deinem Sensor `sensor.stromverbrauch_haushalt_stundlich`
+# ist bereits eine gute Basis fuer kuenftige Import-Historie vorhanden.
+
+# Beispiel fuer spaetere Zielnamen:
+# sensor.core2_solar_bucket_00
+# sensor.core2_solar_bucket_01
+# ...
+# sensor.core2_house_bucket_00
+# sensor.core2_house_bucket_01

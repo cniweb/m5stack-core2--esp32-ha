@@ -14,10 +14,23 @@ Die Firmware laeuft als Arduino-Anwendung auf dem ESP32 und liest die benoetigte
 
 ## Display-Seiten
 
-- `Ueber`: Gauges plus kompakte Balkenhistorie
+- `Ueber`: Gauges fuer Solar und Verbrauch, Akku oben rechts, kompakte Balkenhistorie mit Labels links neben den Balken
 - `Detail`: Live-Werte, Bilanz, Peaks und Status
 - `Summen`: Tages-kWh fuer Solar und Hausverbrauch
 - `Netz`: Netzbezug und Einspeisung live plus Tageswerte
+
+## UI-Stand
+
+Der aktuell verifizierte UI-Stand auf dem Core2:
+
+- die `Ueber`-Seite ist absichtlich kompakt gehalten
+- der Akkustand erscheint nur auf der `Ueber`-Seite oben rechts
+- das WLAN-Signal wird nur eingeblendet, wenn es schwach ist
+- die Balkenlabels `Solar` und `Haus` stehen links vor den jeweiligen Balkendiagrammen
+- schmale Karten nutzen an mehreren Stellen zweizeilige Werte, damit grosse Wattzahlen nicht abgeschnitten werden
+
+Aktuell sind keine Screenshots im Repository eingecheckt.
+Die textliche Beschreibung in dieser README bildet daher den verifizierten Ist-Zustand ab.
 
 ## Voraussetzungen
 
@@ -105,6 +118,7 @@ Der Online-REST-Preflight wird dort bewusst uebersprungen, weil keine lokalen Se
 - Der Core2 verbindet sich nach dem Start mit dem WLAN.
 - Anschliessend werden die `sensor.core2_*`-Entities per REST gepollt.
 - Die unteren Touch-Reiter wechseln zwischen den vier Ansichten.
+- Die `Ueber`-Seite zeigt den Akku rechtsbuendig oben an und blendet WLAN nur bei schwachem Signal ein.
 
 ## Fehlersuche
 

@@ -209,9 +209,10 @@ void draw_history_row(int16_t x, int16_t y, const char *label, uint16_t accent, 
   constexpr int16_t kBarWidth = 10;
   constexpr int16_t kBarGap = 4;
   constexpr int16_t kBarHeight = 28;
+  constexpr int16_t kLabelWidth = 28;
 
   set_text(1, accent);
-  M5.Display.setCursor(x, y - 14);
+  M5.Display.setCursor(x, y + 10);
   M5.Display.print(label);
 
   for (size_t i = 0; i < Config::kHistoryPoints; ++i) {
@@ -223,7 +224,7 @@ void draw_history_row(int16_t x, int16_t y, const char *label, uint16_t accent, 
       value = Config::kPowerScaleMaxW;
     }
     int16_t fill_height = static_cast<int16_t>((value / Config::kPowerScaleMaxW) * kBarHeight);
-    int16_t bar_x = x + static_cast<int16_t>(i) * (kBarWidth + kBarGap);
+    int16_t bar_x = x + kLabelWidth + static_cast<int16_t>(i) * (kBarWidth + kBarGap);
     int16_t bar_y = y + (kBarHeight - fill_height);
 
     M5.Display.drawRect(bar_x, y, kBarWidth, kBarHeight, color_grid());
@@ -271,17 +272,21 @@ void draw_tab(size_t index, const char *label, uint16_t accent) {
 void draw_status() {
   const int battery_level = M5.Power.getBatteryLevel();
 
-  set_text(1, color_text());
-  M5.Display.setCursor(196, 8);
-  if (battery_level >= 0) {
-    M5.Display.printf("Akku %d%%", battery_level);
+  if (g_active_page == Page::kOverview && battery_level >= 0) {
+    set_text(1, color_text());
+    const String battery_text = String("Akku ") + battery_level + "%";
+    const int16_t battery_x = 318 - static_cast<int16_t>(battery_text.length()) * 6;
+    M5.Display.setCursor(battery_x, 8);
+    M5.Display.print(battery_text);
   }
 
-  M5.Display.setCursor(196, 24);
   if (WiFi.status() == WL_CONNECTED && WiFi.RSSI() <= -70) {
+    set_text(1, color_text());
+    M5.Display.setCursor(196, 24);
     M5.Display.printf("WiFi %d dBm", WiFi.RSSI());
   }
 
+  set_text(1, color_text());
   M5.Display.setCursor(196, 40);
   if (g_last_success_ms > 0) {
     const uint32_t age = (millis() - g_last_success_ms) / 1000;

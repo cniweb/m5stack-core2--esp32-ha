@@ -210,6 +210,7 @@ void draw_history_row(int16_t x, int16_t y, const char *label, uint16_t accent, 
   constexpr int16_t kBarGap = 4;
   constexpr int16_t kBarHeight = 28;
   constexpr int16_t kLabelWidth = 28;
+  constexpr int16_t kBarOffset = 20;
 
   set_text(1, accent);
   M5.Display.setCursor(x, y + 10);
@@ -224,7 +225,7 @@ void draw_history_row(int16_t x, int16_t y, const char *label, uint16_t accent, 
       value = Config::kPowerScaleMaxW;
     }
     int16_t fill_height = static_cast<int16_t>((value / Config::kPowerScaleMaxW) * kBarHeight);
-    int16_t bar_x = x + kLabelWidth + static_cast<int16_t>(i) * (kBarWidth + kBarGap);
+    int16_t bar_x = x + kLabelWidth + kBarOffset + static_cast<int16_t>(i) * (kBarWidth + kBarGap);
     int16_t bar_y = y + (kBarHeight - fill_height);
 
     M5.Display.drawRect(bar_x, y, kBarWidth, kBarHeight, color_grid());
@@ -469,12 +470,12 @@ void draw_grid_page() {
   }
 
   if (g_state.grid_export_day_energy.available) {
-    draw_split_value(174, 164, "Einspeisung", g_state.grid_export_day_energy.value, "kWh", "heute",
+    draw_split_value(174, 164, "Einspeisung heute", g_state.grid_export_day_energy.value, "kWh", "",
                      color_export(), 1);
   } else {
     set_text(1, color_export());
     M5.Display.setCursor(174, 164);
-    M5.Display.print("Einspeisung");
+    M5.Display.print("Einspeisung heute");
     set_text(1, color_text());
     M5.Display.setCursor(174, 180);
     M5.Display.print("n/v");

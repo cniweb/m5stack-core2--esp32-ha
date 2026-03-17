@@ -28,6 +28,7 @@ Der aktuell verifizierte UI-Stand auf dem Core2:
 - das WLAN-Signal wird nur eingeblendet, wenn es schwach ist
 - die Balkenlabels `Solar` und `Haus` stehen links vor den jeweiligen Balkendiagrammen
 - schmale Karten nutzen an mehreren Stellen zweizeilige Werte, damit grosse Wattzahlen nicht abgeschnitten werden
+- nach etwa 30 Sekunden ohne Beruehrung wird die Hintergrundbeleuchtung ausgeschaltet; die erste Beruehrung weckt das Display wieder auf
 
 Aktuell sind keine Screenshots im Repository eingecheckt.
 Die textliche Beschreibung in dieser README bildet daher den verifizierten Ist-Zustand ab.

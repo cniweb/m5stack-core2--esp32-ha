@@ -82,11 +82,16 @@ Page g_active_page = Page::kOverview;
 uint32_t g_last_poll_ms = 0;
 uint32_t g_last_history_ms = 0;
 uint32_t g_last_success_ms = 0;
+uint32_t g_last_touch_ms = 0;
 String g_last_error;
 bool g_needs_redraw = true;
+bool g_display_sleeping = false;
 float g_solar_history[Config::kHistoryPoints] = {0.0f};
 float g_house_history[Config::kHistoryPoints] = {0.0f};
 size_t g_history_count = 0;
+
+constexpr uint8_t kActiveBrightness = 128;
+constexpr uint32_t kDisplayTimeoutMs = 60000;
 
 constexpr Rect kTabs[] = {
     {0, 214, 80, 26},
@@ -499,6 +504,10 @@ void draw_grid_page() {
 }
 
 void draw_dashboard() {
+  if (g_display_sleeping) {
+    return;
+  }
+
   M5.Display.fillScreen(color_bg());
   draw_status();
 
@@ -695,9 +704,43 @@ void ensure_wifi() {
   g_needs_redraw = true;
 }
 
+void sleep_display() {
+  if (g_display_sleeping) {
+    return;
+  }
+
+  Serial.println("[UI] display sleep");
+  M5.Display.setBrightness(0);
+  g_display_sleeping = true;
+}
+
+void wake_display() {
+  if (!g_display_sleeping) {
+    return;
+  }
+
+  Serial.println("[UI] display wake");
+  M5.Display.setBrightness(kActiveBrightness);
+  g_display_sleeping = false;
+  g_needs_redraw = true;
+}
+
+void update_display_timeout() {
+  if (!g_display_sleeping && (millis() - g_last_touch_ms) >= kDisplayTimeoutMs) {
+    sleep_display();
+  }
+}
+
 void handle_touch() {
   auto detail = M5.Touch.getDetail(0);
   if (!detail.wasPressed()) {
+    return;
+  }
+
+  g_last_touch_ms = millis();
+
+  if (g_display_sleeping) {
+    wake_display();
     return;
   }
 
@@ -720,8 +763,9 @@ void setup() {
   Serial.println("[BOOT] Core2 REST dashboard starting");
 
   M5.Display.setRotation(1);
-  M5.Display.setBrightness(128);
+  M5.Display.setBrightness(kActiveBrightness);
   M5.Display.fillScreen(color_bg());
+  g_last_touch_ms = millis();
 
   ensure_wifi();
   refresh_data();
@@ -733,6 +777,7 @@ void setup() {
 void loop() {
   M5.update();
   handle_touch();
+  update_display_timeout();
   ensure_wifi();
 
   const uint32_t now = millis();

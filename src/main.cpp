@@ -86,6 +86,7 @@ uint32_t g_last_touch_ms = 0;
 String g_last_error;
 bool g_needs_redraw = true;
 bool g_display_sleeping = false;
+bool g_ignore_touch_until_release = false;
 float g_solar_history[Config::kHistoryPoints] = {0.0f};
 float g_house_history[Config::kHistoryPoints] = {0.0f};
 size_t g_history_count = 0;
@@ -578,6 +579,8 @@ bool fetch_entity_state(const char *entity_id, float &result) {
     }
   }
 
+  http.setConnectTimeout(1500);
+  http.setTimeout(1500);
   http.addHeader("Authorization", "Bearer " + String(HA_TOKEN));
   http.addHeader("Content-Type", "application/json");
   status_code = http.GET();
@@ -653,18 +656,25 @@ void refresh_data() {
   Serial.println("[REST] refresh start");
   bool any_success = false;
   any_success |= update_reading(g_state.solar_power);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.house_power);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.solar_day_energy);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.house_day_energy);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.grid_import_power);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.grid_export_power);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.grid_import_day_energy);
+  M5.update();
   delay(100);
   any_success |= update_reading(g_state.grid_export_day_energy);
 
@@ -692,6 +702,7 @@ void ensure_wifi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   const uint32_t started = millis();
   while (WiFi.status() != WL_CONNECTED && (millis() - started) < 15000) {
+    M5.update();
     delay(250);
   }
 
@@ -733,7 +744,16 @@ void update_display_timeout() {
 
 void handle_touch() {
   auto detail = M5.Touch.getDetail(0);
-  if (!detail.wasPressed()) {
+
+  if (g_ignore_touch_until_release) {
+    if (!detail.isPressed()) {
+      g_ignore_touch_until_release = false;
+    }
+    return;
+  }
+
+  const bool touch_active = detail.wasPressed() || detail.isPressed() || detail.wasReleased();
+  if (!touch_active) {
     return;
   }
 
@@ -741,6 +761,11 @@ void handle_touch() {
 
   if (g_display_sleeping) {
     wake_display();
+    g_ignore_touch_until_release = true;
+    return;
+  }
+
+  if (!detail.wasPressed()) {
     return;
   }
 

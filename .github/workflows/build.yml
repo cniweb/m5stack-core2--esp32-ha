@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PLATFORMIO_CI: "true"
 
     steps:
       - name: Checkout repository
@@ -23,6 +25,4 @@ jobs:
         run: pip install platformio
 
       - name: Build firmware
-        env:
-          GITHUB_ACTIONS: true
         run: pio run

@@ -1,6 +1,7 @@
 Import("env")
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -36,8 +37,9 @@ def fail(message):
 
 
 def run_preflight():
-    github_actions = str(env.get("GITHUB_ACTIONS", "")).lower() == "true"
-    if github_actions:
+    github_actions = str(os.environ.get("GITHUB_ACTIONS", "")).lower() == "true"
+    ci_mode = str(os.environ.get("PLATFORMIO_CI", "")).lower() == "true"
+    if github_actions or ci_mode:
         print("HA REST preflight: skipped in GitHub Actions")
         return
 

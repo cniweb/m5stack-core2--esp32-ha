@@ -204,6 +204,10 @@ Agents must not remove or bypass this preflight unless the user explicitly reque
 - If UI or networking behavior changes, prefer reflashing the real Core2 when available.
 - When Home Assistant configuration changes are involved, re-check the relevant `sensor.core2_*` entities over REST.
 - Do not claim the device works unless both build-time checks and at least one runtime validation path were exercised.
+- When a firmware change has been successfully built and flashed to the real Core2, prefer this follow-up workflow unless the user says otherwise:
+  1. commit the change with a meaningful message
+  2. push the current branch
+  3. check the latest GitHub Actions status and report whether the remote build passed
 
 ## When Touching Home Assistant Package Files
 

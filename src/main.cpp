@@ -269,13 +269,20 @@ void draw_tab(size_t index, const char *label, uint16_t accent) {
 }
 
 void draw_status() {
+  const int battery_level = M5.Power.getBatteryLevel();
+
   set_text(1, color_text());
   M5.Display.setCursor(196, 8);
+  if (battery_level >= 0) {
+    M5.Display.printf("Akku %d%%", battery_level);
+  }
+
+  M5.Display.setCursor(196, 24);
   if (WiFi.status() == WL_CONNECTED && WiFi.RSSI() <= -70) {
     M5.Display.printf("WiFi %d dBm", WiFi.RSSI());
   }
 
-  M5.Display.setCursor(196, 24);
+  M5.Display.setCursor(196, 40);
   if (g_last_success_ms > 0) {
     const uint32_t age = (millis() - g_last_success_ms) / 1000;
     M5.Display.printf("Sync %lus", static_cast<unsigned long>(age));

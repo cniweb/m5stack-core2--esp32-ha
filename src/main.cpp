@@ -151,6 +151,21 @@ void draw_split_value(int16_t x, int16_t y, const char *label, float value, cons
   }
 }
 
+void draw_stack_metric(int16_t x, int16_t y, const char *label, float value, const char *unit,
+                       uint16_t accent, uint8_t value_size = 2) {
+  set_text(1, accent);
+  M5.Display.setCursor(x, y);
+  M5.Display.print(label);
+
+  set_text(value_size, color_text());
+  M5.Display.setCursor(x, y + 18);
+  if (value_size > 1) {
+    M5.Display.printf("%.0f %s", value, unit);
+  } else {
+    M5.Display.printf("%.2f %s", value, unit);
+  }
+}
+
 void draw_card(const Rect &rect, uint16_t accent) {
   M5.Display.fillRoundRect(rect.x, rect.y, rect.w, rect.h, 10, color_panel());
   M5.Display.drawRoundRect(rect.x, rect.y, rect.w, rect.h, 10, accent);
@@ -308,8 +323,8 @@ void draw_details_page() {
   const Rect left_top{12, 12, 142, 64};
   const Rect right_top{166, 12, 142, 64};
   const Rect left_mid{12, 88, 142, 54};
-  const Rect right_mid{166, 88, 142, 54};
-  const Rect status{12, 154, 296, 52};
+  const Rect right_mid{166, 88, 142, 108};
+  const Rect status{12, 154, 142, 52};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(left_mid, color_sum());
@@ -363,17 +378,18 @@ void draw_details_page() {
   set_text(1, color_warn());
   M5.Display.setCursor(174, 96);
   M5.Display.print("Session Peaks");
-  draw_split_value(174, 112, "", solar_peak, "W", "PV max", color_text(), 1);
-  draw_split_value(174, 144, "", house_peak, "W", "Last", color_text(), 1);
+  draw_stack_metric(174, 114, "PV max", solar_peak, "W", color_text(), 2);
+  draw_stack_metric(174, 150, "Last", house_peak, "W", color_text(), 2);
 
-  set_text(1, color_text());
+  set_text(1, color_grid());
   M5.Display.setCursor(20, 162);
   M5.Display.print("REST Status");
-  M5.Display.setCursor(20, 180);
+  set_text(2, color_text());
+  M5.Display.setCursor(20, 178);
   if (g_last_error.isEmpty()) {
-    M5.Display.print("Letzter Abruf erfolgreich");
+    M5.Display.print("OK");
   } else {
-    M5.Display.print(g_last_error);
+    M5.Display.print("!");
   }
 }
 

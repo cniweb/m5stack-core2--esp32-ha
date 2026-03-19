@@ -183,6 +183,8 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
 - When changing card sizes, keep the inner text padding visually consistent with the card border and re-check all sibling cards on the same page.
 - For paired cards on the same row, align text baselines and value blocks so the perceived top and bottom padding inside each card matches as closely as possible.
 - If a row mixes different card heights, adjust content anchors per row so middle-row content can sit slightly higher and bottom-row content slightly lower when that improves visual centering inside the frame.
+- On the `Netz` page, keep the middle-row progress bars slightly higher than strict geometric center when that makes the label-plus-bar block look visually centered inside the card.
+- If the user gives a visual spacing preference during review, carry that preference forward into `AGENTS.md` when it should become an ongoing layout rule instead of a one-off tweak.
 - The overview page intentionally keeps labels short: `Solar`, `Verbrauch`.
 - Hide non-essential status text on the overview page when it wastes space.
 - Display idle mode currently uses a very dim backlight instead of full off because that is more reliable for touch wake on the real device.

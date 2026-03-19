@@ -495,10 +495,10 @@ void draw_grid_page() {
   draw_label_value(20, 20, "Netzbezug aktuell", g_state.grid_import_power, "W", color_import(), 2);
   draw_label_value(174, 20, "Einspeisung aktuell", g_state.grid_export_power, "W", color_export(), 2);
 
-  draw_progress(20, 116, 126, 14,
+  draw_progress(20, 114, 126, 14,
                 g_state.grid_import_power.available ? g_state.grid_import_power.value : 0.0f,
                 color_import(), "Netzbezug aktuell");
-  draw_progress(174, 116, 126, 14,
+  draw_progress(174, 114, 126, 14,
                 g_state.grid_export_power.available ? g_state.grid_export_power.value : 0.0f,
                 color_export(), "Einspeisung aktuell");
 

@@ -481,10 +481,10 @@ void draw_totals_page() {
 void draw_grid_page() {
   const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
   const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
-  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kMidCardHeight};
-  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kMidCardHeight};
-  const Rect left_bottom{kPageMargin, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
-  const Rect right_bottom{kRightColumnX, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, 54};
+  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, 54};
+  const Rect left_bottom{kPageMargin, 146, kHalfCardWidth, 56};
+  const Rect right_bottom{kRightColumnX, 146, kHalfCardWidth, 56};
   draw_card(left_top, color_import());
   draw_card(right_top, color_export());
   draw_card(left_mid, color_import());
@@ -495,34 +495,34 @@ void draw_grid_page() {
   draw_label_value(20, 20, "Netzbezug aktuell", g_state.grid_import_power, "W", color_import(), 2);
   draw_label_value(174, 20, "Einspeisung aktuell", g_state.grid_export_power, "W", color_export(), 2);
 
-  draw_progress(20, 112, 126, 14,
+  draw_progress(20, 118, 126, 14,
                 g_state.grid_import_power.available ? g_state.grid_import_power.value : 0.0f,
                 color_import(), "Netzbezug aktuell");
-  draw_progress(174, 112, 126, 14,
+  draw_progress(174, 118, 126, 14,
                 g_state.grid_export_power.available ? g_state.grid_export_power.value : 0.0f,
                 color_export(), "Einspeisung aktuell");
 
   if (g_state.grid_import_day_energy.available) {
-    draw_split_value(20, 148, "Netzbezug heute", g_state.grid_import_day_energy.value, "kWh", "",
+    draw_split_value(20, 154, "Netzbezug heute", g_state.grid_import_day_energy.value, "kWh", "",
                      color_import(), 2);
   } else {
     set_text(1, color_import());
-    M5.Display.setCursor(20, 148);
+    M5.Display.setCursor(20, 154);
     M5.Display.print("Netzbezug heute");
     set_text(1, color_text());
-    M5.Display.setCursor(20, 174);
+    M5.Display.setCursor(20, 176);
     M5.Display.print("n/v");
   }
 
   if (g_state.grid_export_day_energy.available) {
-    draw_split_value(174, 148, "Einspeisung heute", g_state.grid_export_day_energy.value, "kWh", "",
+    draw_split_value(174, 154, "Einspeisung heute", g_state.grid_export_day_energy.value, "kWh", "",
                      color_export(), 2);
   } else {
     set_text(1, color_export());
-    M5.Display.setCursor(174, 148);
+    M5.Display.setCursor(174, 154);
     M5.Display.print("Einspeisung heute");
     set_text(1, color_text());
-    M5.Display.setCursor(174, 174);
+    M5.Display.setCursor(174, 176);
     M5.Display.print("n/v");
   }
 }

@@ -74,6 +74,8 @@ Nach dem Neustart sollten diese Entities vorhanden sein:
 - `sensor.core2_house_day_energy_kwh`
 - `sensor.core2_grid_import_power`
 - `sensor.core2_grid_export_power`
+- `sensor.core2_grid_import_energy_total`
+- `sensor.core2_grid_export_energy_total`
 - `sensor.core2_grid_import_day_energy_kwh`
 - `sensor.core2_grid_export_day_energy_kwh`
 

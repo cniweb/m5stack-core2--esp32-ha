@@ -13,6 +13,12 @@
 # Netzleistung wird weiterhin aus den Live-Leistungswerten abgeleitet.
 # Die Tagesenergie fuer Netzbezug und Einspeisung wird aus den echten
 # Gesamtzaehlern ueber utility_meter erzeugt.
+#
+# Wichtig:
+# Die beiden Zwischenzaehler mit unique_id `core2_grid_*_energy_total_kwh`
+# werden in Home Assistant als `sensor.core2_grid_*_energy_total` angelegt.
+# Die utility_meter-Quellen muessen deshalb auf diese tatsaechlichen Entity-IDs
+# zeigen, sonst bleiben die Tageszaehler dauerhaft bei `0` und `collecting`.
 
 template:
   - sensor:
@@ -50,6 +56,24 @@ template:
           {% set solar = states('sensor.house_energy_solar_total') | float(0) %}
           {{ [solar - house, 0] | max }}
 
+      - name: "Core2 Grid Import Energy Total"
+        default_entity_id: sensor.core2_grid_import_energy_total
+        unique_id: core2_grid_import_energy_total_kwh
+        unit_of_measurement: "kWh"
+        state_class: total_increasing
+        device_class: energy
+        state: >-
+          {{ (states('sensor.strom_haushalt_bezug') | float(0) / 1000) | round(3) }}
+
+      - name: "Core2 Grid Export Energy Total"
+        default_entity_id: sensor.core2_grid_export_energy_total
+        unique_id: core2_grid_export_energy_total_kwh
+        unit_of_measurement: "kWh"
+        state_class: total_increasing
+        device_class: energy
+        state: >-
+          {{ (states('sensor.strom_haushalt_einspeisung') | float(0) / 1000) | round(3) }}
+
 sensor:
   - platform: integration
     source: sensor.core2_solar_live
@@ -69,24 +93,6 @@ sensor:
     round: 3
     method: trapezoidal
 
-  - platform: template
-    sensors:
-      core2_grid_import_energy_total_kwh:
-        friendly_name: "Core2 Grid Import Energy Total"
-        unique_id: core2_grid_import_energy_total_kwh
-        unit_of_measurement: "kWh"
-        device_class: energy
-        state_class: total_increasing
-        value_template: "{{ (states('sensor.strom_haushalt_bezug') | float(0) / 1000) | round(3) }}"
-
-      core2_grid_export_energy_total_kwh:
-        friendly_name: "Core2 Grid Export Energy Total"
-        unique_id: core2_grid_export_energy_total_kwh
-        unit_of_measurement: "kWh"
-        device_class: energy
-        state_class: total_increasing
-        value_template: "{{ (states('sensor.strom_haushalt_einspeisung') | float(0) / 1000) | round(3) }}"
-
 utility_meter:
   core2_solar_day_energy_kwh:
     source: sensor.core2_solar_energy_total
@@ -97,11 +103,11 @@ utility_meter:
     cycle: daily
 
   core2_grid_import_day_energy_kwh:
-    source: sensor.core2_grid_import_energy_total_kwh
+    source: sensor.core2_grid_import_energy_total
     cycle: daily
 
   core2_grid_export_day_energy_kwh:
-    source: sensor.core2_grid_export_energy_total_kwh
+    source: sensor.core2_grid_export_energy_total
     cycle: daily
 
 # Fuer eine erste UI kann man Stunden-Buckets spaeter als eigene Sensoren

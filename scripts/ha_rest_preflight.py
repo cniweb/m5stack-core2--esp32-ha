@@ -20,6 +20,11 @@ ALLOWED_COLLECTING_UNKNOWN = {
     "sensor.core2_grid_export_day_energy_kwh",
 }
 
+REQUIRED_BACKEND_ENTITIES = {
+    "sensor.core2_grid_import_energy_total",
+    "sensor.core2_grid_export_energy_total",
+}
+
 
 def parse_define(text, name):
     pattern = rf'^\s*#define\s+{re.escape(name)}\s+"([^"]*)"'
@@ -57,6 +62,7 @@ def run_preflight():
     base_url = parse_define(secrets_text, "HA_BASE_URL")
     token = parse_define(secrets_text, "HA_TOKEN")
     entities = parse_entities(config_text)
+    entities.extend(sorted(REQUIRED_BACKEND_ENTITIES))
 
     if not base_url:
         fail("HA_BASE_URL missing in include/secrets.h")

@@ -339,7 +339,7 @@ void draw_details_page() {
   draw_card(status, color_grid());
 
   draw_label_value(20, 20, "Solar aktuell", g_state.solar_power, "W", color_solar(), 2);
-  draw_label_value(174, 20, "Verbrauch", g_state.house_power, "W", color_house(), 2);
+  draw_label_value(174, 20, "Verbrauch heute", g_state.house_power, "W", color_house(), 2);
 
   Reading net_balance{};
   if (g_state.solar_power.available && g_state.house_power.available) {
@@ -413,7 +413,7 @@ void draw_totals_page() {
   draw_card(right_bottom, color_house());
 
   draw_label_value(20, 22, "Solar Summe", g_state.solar_day_energy, "kWh", color_solar(), 2);
-  draw_label_value(174, 22, "Haus Summe", g_state.house_day_energy, "kWh", color_house(), 2);
+  draw_label_value(174, 22, "Verbrauch Summe", g_state.house_day_energy, "kWh", color_house(), 2);
 
   Reading day_balance{};
   if (g_state.solar_day_energy.available && g_state.house_day_energy.available) {
@@ -470,23 +470,23 @@ void draw_grid_page() {
   draw_card(left_bottom, color_import());
   draw_card(right_bottom, color_export());
 
-  draw_label_value(20, 20, "Netzbezug", g_state.grid_import_power, "W", color_import(), 2);
-  draw_label_value(174, 20, "Einspeisung", g_state.grid_export_power, "W", color_export(), 2);
+  draw_label_value(20, 20, "Netzbezug aktuell", g_state.grid_import_power, "W", color_import(), 2);
+  draw_label_value(174, 20, "Einspeisung aktuell", g_state.grid_export_power, "W", color_export(), 2);
 
   draw_progress(20, 114, 130, 14,
                 g_state.grid_import_power.available ? g_state.grid_import_power.value : 0.0f,
-                color_import(), "Import Last");
+                color_import(), "Netzbezug aktuell");
   draw_progress(174, 114, 130, 14,
                 g_state.grid_export_power.available ? g_state.grid_export_power.value : 0.0f,
-                color_export(), "Export Last");
+                color_export(), "Einspeisung aktuell");
 
   if (g_state.grid_import_day_energy.available) {
-    draw_split_value(20, 164, "Bezug heute", g_state.grid_import_day_energy.value, "kWh", "",
+    draw_split_value(20, 164, "Netzbezug heute", g_state.grid_import_day_energy.value, "kWh", "",
                      color_import(), 1);
   } else {
     set_text(1, color_import());
     M5.Display.setCursor(20, 164);
-    M5.Display.print("Bezug heute");
+    M5.Display.print("Netzbezug heute");
     set_text(1, color_text());
     M5.Display.setCursor(20, 180);
     M5.Display.print("n/v");

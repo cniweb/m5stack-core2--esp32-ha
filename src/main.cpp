@@ -92,7 +92,7 @@ float g_house_history[Config::kHistoryPoints] = {0.0f};
 size_t g_history_count = 0;
 
 constexpr uint8_t kActiveBrightness = 128;
-constexpr uint8_t kSleepBrightness = 4;
+constexpr uint8_t kSleepBrightness = 1;
 constexpr uint32_t kDisplayTimeoutMs = 60000;
 
 constexpr Rect kTabs[] = {

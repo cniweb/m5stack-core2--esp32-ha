@@ -118,6 +118,7 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
 - Prefer explicit code over abstraction-heavy refactors.
 - Preserve the current direct-drawing UI style unless a broader redesign is requested.
 - Use ASCII unless the file already uses another encoding.
+- When you need to search docs, use `context7` tools.
 
 ### Imports And Dependencies
 

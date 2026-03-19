@@ -350,9 +350,9 @@ void draw_overview_page() {
 void draw_details_page() {
   const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
   const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
-  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kMidCardHeight};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, 52};
   const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kTallRightCardHeight};
-  const Rect status{kPageMargin, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
+  const Rect status{kPageMargin, 144, kHalfCardWidth, 58};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(left_mid, color_sum());
@@ -368,23 +368,22 @@ void draw_details_page() {
     net_balance.value = g_state.solar_power.value - g_state.house_power.value;
   }
 
+  const char *balance_label = "Bilanz aktuell";
+  if (net_balance.available) {
+    balance_label = net_balance.value >= 0.0f ? "Bilanz akt. (Einsp.)" : "Bilanz akt. (Bezug)";
+  }
+
   set_text(1, color_sum());
   M5.Display.setCursor(20, 96);
-  M5.Display.print("Bilanz aktuell");
+  M5.Display.print(balance_label);
   if (net_balance.available) {
     const float balance_value = fabsf(net_balance.value);
     set_text(2, color_text());
     M5.Display.setCursor(20, 114);
     if (net_balance.value >= 0.0f) {
       M5.Display.printf("+%.0f W", balance_value);
-      set_text(1, color_text());
-      M5.Display.setCursor(20, 130);
-      M5.Display.print("Export");
     } else {
       M5.Display.printf("%.0f W", balance_value);
-      set_text(1, color_text());
-      M5.Display.setCursor(20, 130);
-      M5.Display.print("Bezug");
     }
   } else {
     set_text(2, color_text());
@@ -410,10 +409,10 @@ void draw_details_page() {
   draw_stack_metric(174, 150, "Last", house_peak, "W", color_text(), 2);
 
   set_text(1, color_grid());
-  M5.Display.setCursor(20, 162);
+  M5.Display.setCursor(20, 154);
   M5.Display.print("REST Status");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 178);
+  M5.Display.setCursor(20, 170);
   if (g_last_error.isEmpty()) {
     M5.Display.print("OK");
   } else {

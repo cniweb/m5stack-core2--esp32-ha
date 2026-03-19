@@ -116,12 +116,52 @@ constexpr int16_t kMidCardHeight = 48;
 constexpr int16_t kThirdRowY = kSecondRowY + kMidCardHeight + kPageGap;
 constexpr int16_t kBottomCardHeight = kContentBottomY - kThirdRowY;
 constexpr int16_t kTallRightCardHeight = kContentBottomY - kSecondRowY;
+constexpr int16_t kCardTextInsetX = 8;
+constexpr int16_t kTopCardLabelInsetY = 8;
+constexpr int16_t kMetricLabelInsetY = 10;
+constexpr int16_t kMetricValueGapY = 18;
+constexpr int16_t kSplitLabelInsetY = 10;
+constexpr int16_t kSplitValueGapY = 16;
+constexpr int16_t kBalanceLabelInsetY = 16;
+constexpr int16_t kBalanceValueInsetY = 34;
+constexpr int16_t kStatusLabelInsetY = 10;
+constexpr int16_t kStatusValueInsetY = 26;
+constexpr int16_t kSessionTitleInsetY = 16;
+constexpr int16_t kSessionFirstMetricInsetY = 34;
+constexpr int16_t kSessionSecondMetricInsetY = 70;
+constexpr int16_t kGridProgressBarInsetY = 34;
+constexpr int16_t kGridProgressWidth = 126;
+constexpr int16_t kGridProgressHeight = 14;
+constexpr int16_t kDetailLeftMidHeight = 52;
+constexpr int16_t kDetailStatusY = 144;
+constexpr int16_t kDetailStatusHeight = 58;
+constexpr int16_t kGridMidHeight = 54;
+constexpr int16_t kGridBottomY = 146;
+constexpr int16_t kGridBottomHeight = 56;
+constexpr int16_t kLargeMetricMinHeight = 48;
+constexpr int16_t kSplitMetricMinHeight = 46;
+constexpr int16_t kProgressBlockMinHeight = kGridProgressBarInsetY + kGridProgressHeight + 6;
+constexpr int16_t kStatusBlockMinHeight = 40;
 
 static_assert(kRightColumnX == 166, "Two-column pages must keep a 12 px center gap.");
 static_assert(kSecondRowY == 80 && kThirdRowY == 140,
               "Shared page rows must stay aligned across detail, totals, and grid.");
 static_assert(kBottomCardHeight == 62, "Bottom row height must preserve the 12 px nav gap.");
 static_assert(kTallRightCardHeight == 122, "Detail right column must end on the shared bottom line.");
+static_assert(kTopCardHeight >= kLargeMetricMinHeight,
+              "Top cards must be tall enough for a label/value block without overlap.");
+static_assert(kBottomCardHeight >= kSplitMetricMinHeight,
+              "Bottom shared cards must be tall enough for split metrics without overlap.");
+static_assert(kGridMidHeight >= kProgressBlockMinHeight,
+              "Grid middle cards must keep enough room for the progress block.");
+static_assert(kGridBottomHeight >= kSplitMetricMinHeight,
+              "Grid bottom cards must keep enough room for daily values without overlap.");
+static_assert(kDetailStatusHeight >= kStatusBlockMinHeight,
+              "Detail status card must keep enough room for the status label and value.");
+
+int16_t card_text_x(const Rect &rect) { return rect.x + kCardTextInsetX; }
+
+int16_t card_text_y(const Rect &rect, int16_t inset_y) { return rect.y + inset_y; }
 
 uint16_t rgb(uint8_t red, uint8_t green, uint8_t blue) {
   return M5.Display.color565(red, green, blue);
@@ -350,17 +390,19 @@ void draw_overview_page() {
 void draw_details_page() {
   const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
   const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
-  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, 52};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kDetailLeftMidHeight};
   const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kTallRightCardHeight};
-  const Rect status{kPageMargin, 144, kHalfCardWidth, 58};
+  const Rect status{kPageMargin, kDetailStatusY, kHalfCardWidth, kDetailStatusHeight};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(left_mid, color_sum());
   draw_card(right_mid, color_warn());
   draw_card(status, color_grid());
 
-  draw_label_value(20, 20, "Solar aktuell", g_state.solar_power, "W", color_solar(), 2);
-  draw_label_value(174, 20, "Verbrauch aktuell", g_state.house_power, "W", color_house(), 2);
+  draw_label_value(card_text_x(left_top), card_text_y(left_top, kTopCardLabelInsetY), "Solar aktuell",
+                   g_state.solar_power, "W", color_solar(), 2);
+  draw_label_value(card_text_x(right_top), card_text_y(right_top, kTopCardLabelInsetY),
+                   "Verbrauch aktuell", g_state.house_power, "W", color_house(), 2);
 
   Reading net_balance{};
   if (g_state.solar_power.available && g_state.house_power.available) {
@@ -374,12 +416,12 @@ void draw_details_page() {
   }
 
   set_text(1, color_sum());
-  M5.Display.setCursor(20, 96);
+  M5.Display.setCursor(card_text_x(left_mid), card_text_y(left_mid, kBalanceLabelInsetY));
   M5.Display.print(balance_label);
   if (net_balance.available) {
     const float balance_value = fabsf(net_balance.value);
     set_text(2, color_text());
-    M5.Display.setCursor(20, 114);
+    M5.Display.setCursor(card_text_x(left_mid), card_text_y(left_mid, kBalanceValueInsetY));
     if (net_balance.value >= 0.0f) {
       M5.Display.printf("+%.0f W", balance_value);
     } else {
@@ -387,7 +429,7 @@ void draw_details_page() {
     }
   } else {
     set_text(2, color_text());
-    M5.Display.setCursor(20, 114);
+    M5.Display.setCursor(card_text_x(left_mid), card_text_y(left_mid, kBalanceValueInsetY));
     M5.Display.print("n/v");
   }
 
@@ -403,16 +445,18 @@ void draw_details_page() {
   }
 
   set_text(1, color_warn());
-  M5.Display.setCursor(174, 96);
+  M5.Display.setCursor(card_text_x(right_mid), card_text_y(right_mid, kSessionTitleInsetY));
   M5.Display.print("Session Peaks");
-  draw_stack_metric(174, 114, "PV max", solar_peak, "W", color_text(), 2);
-  draw_stack_metric(174, 150, "Last", house_peak, "W", color_text(), 2);
+  draw_stack_metric(card_text_x(right_mid), card_text_y(right_mid, kSessionFirstMetricInsetY), "PV max",
+                    solar_peak, "W", color_text(), 2);
+  draw_stack_metric(card_text_x(right_mid), card_text_y(right_mid, kSessionSecondMetricInsetY), "Last",
+                    house_peak, "W", color_text(), 2);
 
   set_text(1, color_grid());
-  M5.Display.setCursor(20, 154);
+  M5.Display.setCursor(card_text_x(status), card_text_y(status, kStatusLabelInsetY));
   M5.Display.print("REST Status");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 170);
+  M5.Display.setCursor(card_text_x(status), card_text_y(status, kStatusValueInsetY));
   if (g_last_error.isEmpty()) {
     M5.Display.print("OK");
   } else {
@@ -432,8 +476,10 @@ void draw_totals_page() {
   draw_card(left_bottom, color_solar());
   draw_card(right_bottom, color_house());
 
-  draw_label_value(20, 22, "Solar Summe", g_state.solar_day_energy, "kWh", color_solar(), 2);
-  draw_label_value(174, 22, "Verbrauch Summe", g_state.house_day_energy, "kWh", color_house(), 2);
+  draw_label_value(card_text_x(left_top), card_text_y(left_top, kTopCardLabelInsetY), "Solar Summe",
+                   g_state.solar_day_energy, "kWh", color_solar(), 2);
+  draw_label_value(card_text_x(right_top), card_text_y(right_top, kTopCardLabelInsetY),
+                   "Verbrauch Summe", g_state.house_day_energy, "kWh", color_house(), 2);
 
   Reading day_balance{};
   if (g_state.solar_day_energy.available && g_state.house_day_energy.available) {
@@ -442,10 +488,11 @@ void draw_totals_page() {
   }
 
   set_text(1, color_text());
-  M5.Display.setCursor(20, 90);
+  M5.Display.setCursor(card_text_x(middle), card_text_y(middle, kMetricLabelInsetY));
   M5.Display.print("Tagesbilanz");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 106);
+  M5.Display.setCursor(card_text_x(middle),
+                       card_text_y(middle, kMetricLabelInsetY + kMetricValueGapY));
   if (day_balance.available) {
     M5.Display.printf("%.2f kWh", day_balance.value);
   } else {
@@ -464,27 +511,29 @@ void draw_totals_page() {
   }
 
   set_text(1, color_solar());
-  M5.Display.setCursor(20, 150);
+  M5.Display.setCursor(card_text_x(left_bottom), card_text_y(left_bottom, kMetricLabelInsetY));
   M5.Display.print("Session PV Peak");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 168);
+  M5.Display.setCursor(card_text_x(left_bottom),
+                       card_text_y(left_bottom, kMetricLabelInsetY + kMetricValueGapY));
   M5.Display.printf("%.0f W", solar_peak);
 
   set_text(1, color_house());
-  M5.Display.setCursor(174, 150);
+  M5.Display.setCursor(card_text_x(right_bottom), card_text_y(right_bottom, kMetricLabelInsetY));
   M5.Display.print("Session Verbrauch");
   set_text(2, color_text());
-  M5.Display.setCursor(174, 168);
+  M5.Display.setCursor(card_text_x(right_bottom),
+                       card_text_y(right_bottom, kMetricLabelInsetY + kMetricValueGapY));
   M5.Display.printf("%.0f W", house_peak);
 }
 
 void draw_grid_page() {
   const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
   const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
-  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, 54};
-  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, 54};
-  const Rect left_bottom{kPageMargin, 146, kHalfCardWidth, 56};
-  const Rect right_bottom{kRightColumnX, 146, kHalfCardWidth, 56};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kGridMidHeight};
+  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kGridMidHeight};
+  const Rect left_bottom{kPageMargin, kGridBottomY, kHalfCardWidth, kGridBottomHeight};
+  const Rect right_bottom{kRightColumnX, kGridBottomY, kHalfCardWidth, kGridBottomHeight};
   draw_card(left_top, color_import());
   draw_card(right_top, color_export());
   draw_card(left_mid, color_import());
@@ -492,37 +541,45 @@ void draw_grid_page() {
   draw_card(left_bottom, color_import());
   draw_card(right_bottom, color_export());
 
-  draw_label_value(20, 20, "Netzbezug aktuell", g_state.grid_import_power, "W", color_import(), 2);
-  draw_label_value(174, 20, "Einspeisung aktuell", g_state.grid_export_power, "W", color_export(), 2);
+  draw_label_value(card_text_x(left_top), card_text_y(left_top, kTopCardLabelInsetY),
+                   "Netzbezug aktuell", g_state.grid_import_power, "W", color_import(), 2);
+  draw_label_value(card_text_x(right_top), card_text_y(right_top, kTopCardLabelInsetY),
+                   "Einspeisung aktuell", g_state.grid_export_power, "W", color_export(), 2);
 
-  draw_progress(20, 114, 126, 14,
+  draw_progress(card_text_x(left_mid), card_text_y(left_mid, kGridProgressBarInsetY), kGridProgressWidth,
+                kGridProgressHeight,
                 g_state.grid_import_power.available ? g_state.grid_import_power.value : 0.0f,
                 color_import(), "Netzbezug aktuell");
-  draw_progress(174, 114, 126, 14,
+  draw_progress(card_text_x(right_mid), card_text_y(right_mid, kGridProgressBarInsetY), kGridProgressWidth,
+                kGridProgressHeight,
                 g_state.grid_export_power.available ? g_state.grid_export_power.value : 0.0f,
                 color_export(), "Einspeisung aktuell");
 
   if (g_state.grid_import_day_energy.available) {
-    draw_split_value(20, 156, "Netzbezug heute", g_state.grid_import_day_energy.value, "kWh", "",
+    draw_split_value(card_text_x(left_bottom), card_text_y(left_bottom, kSplitLabelInsetY),
+                     "Netzbezug heute", g_state.grid_import_day_energy.value, "kWh", "",
                      color_import(), 2);
   } else {
     set_text(1, color_import());
-    M5.Display.setCursor(20, 156);
+    M5.Display.setCursor(card_text_x(left_bottom), card_text_y(left_bottom, kSplitLabelInsetY));
     M5.Display.print("Netzbezug heute");
     set_text(1, color_text());
-    M5.Display.setCursor(20, 178);
+    M5.Display.setCursor(card_text_x(left_bottom),
+                         card_text_y(left_bottom, kSplitLabelInsetY + kSplitValueGapY));
     M5.Display.print("n/v");
   }
 
   if (g_state.grid_export_day_energy.available) {
-    draw_split_value(174, 156, "Einspeisung heute", g_state.grid_export_day_energy.value, "kWh", "",
+    draw_split_value(card_text_x(right_bottom), card_text_y(right_bottom, kSplitLabelInsetY),
+                     "Einspeisung heute", g_state.grid_export_day_energy.value, "kWh", "",
                      color_export(), 2);
   } else {
     set_text(1, color_export());
-    M5.Display.setCursor(174, 156);
+    M5.Display.setCursor(card_text_x(right_bottom), card_text_y(right_bottom, kSplitLabelInsetY));
     M5.Display.print("Einspeisung heute");
     set_text(1, color_text());
-    M5.Display.setCursor(174, 178);
+    M5.Display.setCursor(card_text_x(right_bottom),
+                         card_text_y(right_bottom, kSplitLabelInsetY + kSplitValueGapY));
     M5.Display.print("n/v");
   }
 }

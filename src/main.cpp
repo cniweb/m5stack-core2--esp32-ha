@@ -322,8 +322,8 @@ void draw_status() {
 void draw_overview_page() {
   draw_gauge(82, 78, 42, "Solar", g_state.solar_power, color_solar());
   draw_gauge(238, 78, 42, "Verbrauch", g_state.house_power, color_house());
-  draw_history_row(12, 158, "Solar", color_solar(), g_solar_history);
-  draw_history_row(12, 196, "Verbrauch", color_house(), g_house_history);
+  draw_history_row(12, 148, "Solar", color_solar(), g_solar_history);
+  draw_history_row(12, 180, "Verbrauch", color_house(), g_house_history);
 }
 
 void draw_details_page() {

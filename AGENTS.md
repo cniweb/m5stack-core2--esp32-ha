@@ -181,6 +181,8 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
   - shared row anchors should stay aligned unless the user explicitly asks for an intentional exception
 - Prefer deriving card rectangles from shared layout constants in `src/main.cpp` instead of hand-tuning each page independently.
 - When changing card sizes, keep the inner text padding visually consistent with the card border and re-check all sibling cards on the same page.
+- For paired cards on the same row, align text baselines and value blocks so the perceived top and bottom padding inside each card matches as closely as possible.
+- If a row mixes different card heights, adjust content anchors per row so middle-row content can sit slightly higher and bottom-row content slightly lower when that improves visual centering inside the frame.
 - The overview page intentionally keeps labels short: `Solar`, `Verbrauch`.
 - Hide non-essential status text on the overview page when it wastes space.
 - Display idle mode currently uses a very dim backlight instead of full off because that is more reliable for touch wake on the real device.

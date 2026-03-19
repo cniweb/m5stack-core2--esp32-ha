@@ -231,7 +231,7 @@ void draw_history_row(int16_t x, int16_t y, const char *label, uint16_t accent, 
   constexpr int16_t kBarWidth = 10;
   constexpr int16_t kBarGap = 4;
   constexpr int16_t kBarHeight = 28;
-  constexpr int16_t kLabelWidth = 28;
+  constexpr int16_t kLabelWidth = 58;
   constexpr int16_t kBarOffset = 20;
 
   set_text(1, accent);

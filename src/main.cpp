@@ -401,11 +401,11 @@ void draw_details_page() {
 }
 
 void draw_totals_page() {
-  const Rect left_top{12, 12, 142, 72};
-  const Rect right_top{166, 12, 142, 72};
-  const Rect middle{12, 106, 296, 48};
-  const Rect left_bottom{12, 166, 142, 50};
-  const Rect right_bottom{166, 166, 142, 50};
+  const Rect left_top{12, 12, 142, 56};
+  const Rect right_top{166, 12, 142, 56};
+  const Rect middle{12, 80, 296, 48};
+  const Rect left_bottom{12, 140, 142, 62};
+  const Rect right_bottom{166, 140, 142, 62};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(middle, color_grid());
@@ -422,10 +422,10 @@ void draw_totals_page() {
   }
 
   set_text(1, color_text());
-  M5.Display.setCursor(20, 116);
+  M5.Display.setCursor(20, 90);
   M5.Display.print("Tagesbilanz");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 132);
+  M5.Display.setCursor(20, 106);
   if (day_balance.available) {
     M5.Display.printf("%.2f kWh", day_balance.value);
   } else {
@@ -444,17 +444,17 @@ void draw_totals_page() {
   }
 
   set_text(1, color_solar());
-  M5.Display.setCursor(20, 176);
+  M5.Display.setCursor(20, 150);
   M5.Display.print("Session PV Peak");
   set_text(2, color_text());
-  M5.Display.setCursor(20, 190);
+  M5.Display.setCursor(20, 168);
   M5.Display.printf("%.0f W", solar_peak);
 
   set_text(1, color_house());
-  M5.Display.setCursor(174, 176);
+  M5.Display.setCursor(174, 150);
   M5.Display.print("Session Verbrauch");
   set_text(2, color_text());
-  M5.Display.setCursor(174, 190);
+  M5.Display.setCursor(174, 168);
   M5.Display.printf("%.0f W", house_peak);
 }
 

@@ -173,7 +173,15 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
 
 - Test layout changes against large watt values, not only normal values.
 - Use split-line layouts for narrow cards when labels and values can overflow.
-- The overview page intentionally keeps labels short: `Solar`, `Haus`.
+- For the `Detail`, `Summen`, and `Netz` pages, keep a shared 12 px spacing grid:
+  - outer page margin `12`
+  - gap between stacked card rows `12`
+  - gap above the bottom navigation `12`
+  - gap between the two columns `12`
+  - shared row anchors should stay aligned unless the user explicitly asks for an intentional exception
+- Prefer deriving card rectangles from shared layout constants in `src/main.cpp` instead of hand-tuning each page independently.
+- When changing card sizes, keep the inner text padding visually consistent with the card border and re-check all sibling cards on the same page.
+- The overview page intentionally keeps labels short: `Solar`, `Verbrauch`.
 - Hide non-essential status text on the overview page when it wastes space.
 - Display idle mode currently uses a very dim backlight instead of full off because that is more reliable for touch wake on the real device.
 

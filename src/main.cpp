@@ -102,6 +102,27 @@ constexpr Rect kTabs[] = {
     {240, 214, 80, 26},
 };
 
+constexpr int16_t kPageMargin = 12;
+constexpr int16_t kPageGap = 12;
+constexpr int16_t kHalfCardWidth = 142;
+constexpr int16_t kFullCardWidth = 296;
+constexpr int16_t kRightColumnX = kPageMargin + kHalfCardWidth + kPageGap;
+constexpr int16_t kNavTopY = 214;
+constexpr int16_t kContentBottomY = kNavTopY - kPageGap;
+constexpr int16_t kTopRowY = kPageMargin;
+constexpr int16_t kTopCardHeight = 56;
+constexpr int16_t kSecondRowY = kTopRowY + kTopCardHeight + kPageGap;
+constexpr int16_t kMidCardHeight = 48;
+constexpr int16_t kThirdRowY = kSecondRowY + kMidCardHeight + kPageGap;
+constexpr int16_t kBottomCardHeight = kContentBottomY - kThirdRowY;
+constexpr int16_t kTallRightCardHeight = kContentBottomY - kSecondRowY;
+
+static_assert(kRightColumnX == 166, "Two-column pages must keep a 12 px center gap.");
+static_assert(kSecondRowY == 80 && kThirdRowY == 140,
+              "Shared page rows must stay aligned across detail, totals, and grid.");
+static_assert(kBottomCardHeight == 62, "Bottom row height must preserve the 12 px nav gap.");
+static_assert(kTallRightCardHeight == 122, "Detail right column must end on the shared bottom line.");
+
 uint16_t rgb(uint8_t red, uint8_t green, uint8_t blue) {
   return M5.Display.color565(red, green, blue);
 }
@@ -327,11 +348,11 @@ void draw_overview_page() {
 }
 
 void draw_details_page() {
-  const Rect left_top{12, 12, 142, 64};
-  const Rect right_top{166, 12, 142, 64};
-  const Rect left_mid{12, 88, 142, 54};
-  const Rect right_mid{166, 88, 142, 118};
-  const Rect status{12, 154, 142, 52};
+  const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kMidCardHeight};
+  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kTallRightCardHeight};
+  const Rect status{kPageMargin, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(left_mid, color_sum());
@@ -401,11 +422,11 @@ void draw_details_page() {
 }
 
 void draw_totals_page() {
-  const Rect left_top{12, 12, 142, 56};
-  const Rect right_top{166, 12, 142, 56};
-  const Rect middle{12, 80, 296, 48};
-  const Rect left_bottom{12, 140, 142, 62};
-  const Rect right_bottom{166, 140, 142, 62};
+  const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect middle{kPageMargin, kSecondRowY, kFullCardWidth, kMidCardHeight};
+  const Rect left_bottom{kPageMargin, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
+  const Rect right_bottom{kRightColumnX, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
   draw_card(left_top, color_solar());
   draw_card(right_top, color_house());
   draw_card(middle, color_grid());
@@ -459,12 +480,12 @@ void draw_totals_page() {
 }
 
 void draw_grid_page() {
-  const Rect left_top{12, 12, 142, 64};
-  const Rect right_top{166, 12, 142, 64};
-  const Rect left_mid{12, 88, 142, 42};
-  const Rect right_mid{166, 88, 142, 42};
-  const Rect left_bottom{12, 138, 142, 68};
-  const Rect right_bottom{166, 138, 142, 68};
+  const Rect left_top{kPageMargin, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect right_top{kRightColumnX, kTopRowY, kHalfCardWidth, kTopCardHeight};
+  const Rect left_mid{kPageMargin, kSecondRowY, kHalfCardWidth, kMidCardHeight};
+  const Rect right_mid{kRightColumnX, kSecondRowY, kHalfCardWidth, kMidCardHeight};
+  const Rect left_bottom{kPageMargin, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
+  const Rect right_bottom{kRightColumnX, kThirdRowY, kHalfCardWidth, kBottomCardHeight};
   draw_card(left_top, color_import());
   draw_card(right_top, color_export());
   draw_card(left_mid, color_import());

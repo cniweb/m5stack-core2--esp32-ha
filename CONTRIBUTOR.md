@@ -7,10 +7,10 @@ Fuer Endanwender-Setup und Home-Assistant-Installation ist `README.md` der Einst
 
 Bitte lies zuerst:
 
-- `README.md` fuer den Nutzer- und Installationsworkflow
-- `docs/setup.md` fuer technische Setup-Details
-- `docs/architecture.md` fuer Architektur und Datenfluss
-- `AGENTS.md` fuer projektspezifische Regeln und verifizierte Erkenntnisse
+- [README.md](README.md) fuer den Nutzer- und Installationsworkflow
+- [docs/setup.md](docs/setup.md) fuer technische Setup-Details
+- [docs/architecture.md](docs/architecture.md) fuer Architektur und Datenfluss
+- [AGENTS.md](AGENTS.md) fuer projektspezifische Regeln und verifizierte Erkenntnisse
 
 ## Voraussetzungen Fuer Entwicklung
 
@@ -125,7 +125,7 @@ Vor einem Commit solltest du moeglichst:
 
 Aktualisiere bei relevanten Aenderungen auch:
 
-- `README.md` fuer Nutzer-Workflow
-- `docs/setup.md` fuer Setup-Details
-- `docs/architecture.md` fuer Architektur- oder Datenfluss-Aenderungen
-- `AGENTS.md` fuer agentische Regeln und wichtige Learnings
+- [README.md](README.md) fuer Nutzer-Workflow
+- [docs/setup.md](docs/setup.md) fuer Setup-Details
+- [docs/architecture.md](docs/architecture.md) fuer Architektur- oder Datenfluss-Aenderungen
+- [AGENTS.md](AGENTS.md) fuer agentische Regeln und wichtige Learnings

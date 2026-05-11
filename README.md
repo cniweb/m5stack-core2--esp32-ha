@@ -96,6 +96,6 @@ Der Workflow prueft, ob die Firmware mit PlatformIO erfolgreich gebaut werden ka
 
 Wenn du am Projekt mitarbeiten willst, lies bitte zuerst:
 
-- `CONTRIBUTOR.md`
+- [CONTRIBUTOR.md](CONTRIBUTOR.md)
 
 Die Datei verweist auf die technische Doku und beschreibt den verifizierten Entwicklungs-Workflow.

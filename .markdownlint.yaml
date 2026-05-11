@@ -1,0 +1,13 @@
+# Markdownlint configuration
+
+# Default state for all rules
+default: true
+
+# MD013: Line length (disabled because technical docs often have long lines, URLs, etc.)
+MD013: false
+
+# MD033: Inline HTML (allowed if we ever need it for complex formatting, e.g. <br> or <img>)
+MD033: false
+
+# MD024: Multiple headings with the same content (allowed, e.g. multiple "Notes" sections)
+MD024: false

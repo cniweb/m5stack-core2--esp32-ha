@@ -172,6 +172,7 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
 ### Display Layout Work
 
 - Test layout changes against large watt values, not only normal values.
+- Use `static_assert` for layout constants to validate screen boundaries and prevent geometric overlaps at compile time.
 - Use split-line layouts for narrow cards when labels and values can overflow.
 - For the `Detail`, `Summen`, and `Netz` pages, keep a shared 12 px spacing grid:
   - outer page margin `12`

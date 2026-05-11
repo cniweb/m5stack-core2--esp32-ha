@@ -51,8 +51,10 @@ Ziele dieser Entscheidung:
 
 ### Eingangs-Sensoren in Home Assistant
 
-- `sensor.house_energy_solar_total`
-- `sensor.leistung_haushalt`
+- `sensor.house_energy_solar_total` (Solar-Leistung)
+- `sensor.leistung_haushalt` (Haus-Leistung)
+- `sensor.strom_haushalt_bezug` (Netzbezug-Energie)
+- `sensor.strom_haushalt_einspeisung` (Einspeisung-Energie)
 
 ### Abgeleitete Sensoren im Paket
 
@@ -133,12 +135,12 @@ Dadurch scheitert ein Build frueh, wenn die Backend-Seite noch nicht korrekt vor
 
 - keine echte historische Tageskurve aus Home Assistant
 - Polling statt push-basierter Updates
-- Netzbezug und Einspeisung sind aus Solar und Hausverbrauch abgeleitet
+- Netzleistung (Watt) ist aus Solar und Hausverbrauch abgeleitet (Energie-Summen nutzen hingegen echte Zaehler)
 - keine Beruecksichtigung eines Batteriespeichers in der Energiebilanz
 
 ## Sinnvolle Weiterentwicklungen
 
 1. echte Stunden- oder 15-Minuten-Historie aus Home Assistant abrufen
 2. REST durch WebSocket oder MQTT ergaenzen
-3. Netzsensoren auf echte Zaehlerdaten umstellen
+3. Netzleistung (Watt) auf echte Live-Zaehlerdaten umstellen (bisher nur Energie)
 4. weitere Seiten fuer Woche, Batterie oder Wetter ergaenzen

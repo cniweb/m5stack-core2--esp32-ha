@@ -13,6 +13,8 @@ Die Firmware liest Daten direkt aus Home Assistant ueber die REST-API.
 - die Basissensoren in Home Assistant existieren
   - `sensor.house_energy_solar_total`
   - `sensor.leistung_haushalt`
+  - `sensor.strom_haushalt_bezug`
+  - `sensor.strom_haushalt_einspeisung`
 - optional fuer spaetere Erweiterungen
   - `sensor.stromverbrauch_haushalt_stundlich`
 

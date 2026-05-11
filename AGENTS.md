@@ -218,6 +218,7 @@ GitHub Actions skips the online preflight because CI has no local secrets and no
 ## Documentation Expectations
 
 - Update `README.md` for user-visible workflow or UI changes.
+- Avoid duplicating detailed instructions across markdown files. Keep the `README.md` concise and link to specific `docs/` pages for deep-dives.
 - Update `docs/setup.md` when setup, flashing, or preflight behavior changes.
 - Update `docs/architecture.md` when data flow or responsibilities change.
 - Keep docs aligned with verified behavior, not aspirations.

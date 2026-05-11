@@ -45,90 +45,28 @@ Fuer die Nutzung brauchst du:
 
 ## Installation Und Nutzung
 
-### 1. Home Assistant vorbereiten
+Die vollstaendige Anleitung zur Einrichtung von Home Assistant, den lokalen Secrets und dem Build-Prozess findest du unter:
+👉 **[Setup-Anleitung (docs/setup.md)](docs/setup.md)**
 
-In deiner `configuration.yaml` muss Paket-Unterstuetzung aktiv sein:
+### Quick Start
 
-```yaml
-homeassistant:
-  packages: !include_dir_named packages
-```
+1. Kopiere `home-assistant/packages/core2_power_history.yaml` in dein HA-Konfigurationsverzeichnis (`packages/` Ordner).
+2. Kopiere `include/secrets.example.h` nach `include/secrets.h` und passe WLAN sowie HA-Token an.
+3. Baue und flashe die Firmware:
+   ```sh
+   pio run -t upload --upload-port COM8
+   pio device monitor --port COM8 --baud 115200
+   ```
 
-Danach die Paketdatei
+Weitere Details zum REST-Preflight, erwarteten Entities und der **Fehlersuche** findest du in der [Setup-Anleitung](docs/setup.md).
+Fuer Details zum Datenfluss und der Komponenten-Aufteilung siehe die [Architektur-Dokumentation](docs/architecture.md).
 
-- `home-assistant/packages/core2_power_history.yaml`
-
-nach
-
-- `packages/core2_power_history.yaml`
-
-in dein echtes Home-Assistant-Konfigurationsverzeichnis kopieren und Home Assistant neu starten.
-
-### 2. Erwartete Entities pruefen
-
-Nach dem Neustart sollten diese Entities vorhanden sein:
-
-- `sensor.core2_solar_live`
-- `sensor.core2_house_live`
-- `sensor.core2_solar_day_energy_kwh`
-- `sensor.core2_house_day_energy_kwh`
-- `sensor.core2_grid_import_power`
-- `sensor.core2_grid_export_power`
-- `sensor.core2_grid_import_energy_total`
-- `sensor.core2_grid_export_energy_total`
-- `sensor.core2_grid_import_day_energy_kwh`
-- `sensor.core2_grid_export_day_energy_kwh`
-
-Hinweis:
-
-- frische `utility_meter`-Tagessensoren koennen kurz `unknown` mit `status=collecting` sein
-- das ist direkt nach einem Neustart normal
-
-### 3. Firmware konfigurieren
-
-Kopiere:
-
-- `include/secrets.example.h`
-
-nach:
-
-- `include/secrets.h`
-
-Trage dort ein:
-
-- `WIFI_SSID`
-- `WIFI_PASSWORD`
-- `HA_BASE_URL`
-- `HA_TOKEN`
-
-### 4. Bauen und flashen
-
-Typische Befehle:
-
-```sh
-pio run
-pio run -t upload --upload-port COM8
-pio device monitor --port COM8 --baud 115200
-```
-
-Vor jedem Build wird automatisch ein REST-Preflight ausgefuehrt.
-
-In GitHub Actions wird der Firmware-Build ebenfalls automatisch geprueft.
-Der Online-REST-Preflight wird dort bewusst uebersprungen, weil keine lokalen Secrets und kein Zugriff auf deine Home-Assistant-Instanz vorhanden sind.
-
-### 5. Im Alltag nutzen
+### Im Alltag nutzen
 
 - Der Core2 verbindet sich nach dem Start mit dem WLAN.
 - Anschliessend werden die `sensor.core2_*`-Entities per REST gepollt.
 - Die unteren Touch-Reiter wechseln zwischen den vier Ansichten.
 - Die `Ueber`-Seite zeigt den Akku rechtsbuendig oben an und blendet WLAN nur bei schwachem Signal ein.
-
-## Fehlersuche
-
-- `404` im Preflight: Paket nicht geladen oder `sensor.core2_*` fehlt
-- `401` im Preflight: Token in `include/secrets.h` ungueltig
-- `n/v` auf dem Display: zuerst seriellen Monitor pruefen
-- WLAN verbindet sich nicht: SSID, Passwort und 2.4-GHz-Verfuegbarkeit pruefen
 
 ## Projektstruktur
 
@@ -140,10 +78,10 @@ Der Online-REST-Preflight wird dort bewusst uebersprungen, weil keine lokalen Se
 
 ## Weiterfuehrende Doku
 
-- Setup im Detail: `docs/setup.md`
-- Architektur und Datenfluss: `docs/architecture.md`
-- Arduino-REST-Ueberblick: `docs/arduino-rest.md`
-- Hinweise fuer Mitwirkende: `CONTRIBUTOR.md`
+- Setup im Detail: [docs/setup.md](docs/setup.md)
+- Architektur und Datenfluss: [docs/architecture.md](docs/architecture.md)
+- Arduino-REST-Ueberblick: [docs/arduino-rest.md](docs/arduino-rest.md)
+- Hinweise fuer Mitwirkende: [CONTRIBUTOR.md](CONTRIBUTOR.md)
 
 ## CI
 

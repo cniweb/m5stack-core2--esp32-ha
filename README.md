@@ -53,6 +53,7 @@ Die vollstaendige Anleitung zur Einrichtung von Home Assistant, den lokalen Secr
 1. Kopiere `home-assistant/packages/core2_power_history.yaml` in dein HA-Konfigurationsverzeichnis (`packages/` Ordner).
 2. Kopiere `include/secrets.example.h` nach `include/secrets.h` und passe WLAN sowie HA-Token an.
 3. Baue und flashe die Firmware:
+   
    ```sh
    pio run -t upload --upload-port COM8
    pio device monitor --port COM8 --baud 115200

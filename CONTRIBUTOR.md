@@ -24,25 +24,8 @@ Du brauchst:
 
 ## Lokales Setup
 
-### Home Assistant
-
-Die Home-Assistant-Vorbereitung ist in `README.md` und `docs/setup.md` beschrieben.
-Wichtig fuer Entwicklung:
-
-- `home-assistant/packages/core2_power_history.yaml` muss im echten HA-`packages`-Ordner liegen
-- die `sensor.core2_*`-Entities muessen vor Builds verfuegbar sein
-
-### Firmware-Secrets
-
-Kopiere:
-
-- `include/secrets.example.h`
-
-nach:
-
-- `include/secrets.h`
-
-`include/secrets.h` ist absichtlich von Git ausgeschlossen.
+Das vollstaendige lokale Setup fuer Home Assistant (Paket-Installation) und die Firmware (WLAN und HA-Tokens in `secrets.h`) ist detailliert in der **[Setup-Anleitung](docs/setup.md)** beschrieben.
+Bitte fuehre diese Schritte aus, bevor du mit der Entwicklung beginnst.
 
 ## Build Und Hardware-Workflow
 
@@ -79,38 +62,13 @@ Wichtig:
 
 ## Preflight
 
-Vor jedem Build validiert `scripts/ha_rest_preflight.py` automatisch:
-
-- `include/secrets.h` vorhanden
-- `HA_BASE_URL` gesetzt
-- `HA_TOKEN` kein Platzhalter
-- alle benoetigten `sensor.core2_*`-Entities erreichbar
-- keine unbrauchbaren States
-
-Sonderfall:
-
-- frische `utility_meter`-Tagessensoren mit `status=collecting` duerfen kurz `unknown` sein
-- das wird nur als Warnung behandelt
+Vor jedem lokalen Build validiert `scripts/ha_rest_preflight.py` automatisch deine Konfiguration gegen Home Assistant.
+Details dazu, was genau geprueft wird und wie Fehler behoben werden koennen, findest du in der [Setup-Anleitung unter REST-Preflight](docs/setup.md#rest-preflight).
 
 ## Entwicklungsregeln
 
-### Firmware
-
-- UI-Aenderungen immer gegen grosse Wattwerte testen
-- auf Textueberlauf in schmalen Karten achten
-- schmale Layouts lieber zweizeilig statt abgeschnitten gestalten
-- serielle Logs fuer Debugging kurz und gezielt halten
-
-### Home Assistant
-
-- bevorzugt echte Zaehler und Basissensoren nutzen, wenn vorhanden
-- die Firmware soll auf stabile `sensor.core2_*`-Namen zugreifen
-- bei Aenderungen an upstream-Sensoren zuerst das HA-Paket anpassen
-
-### REST
-
-- REST-Probleme immer getrennt nach Home Assistant, Netzwerk und On-Device-Handling untersuchen
-- in diesem Projekt ist die direkte `state`-Extraktion aus dem Response-Text auf dem Geraet robuster als die fruehere JSON-Filter-Variante gewesen
+Alle verbindlichen Entwicklungsrichtlinien zu Layouts, Home Assistant Integration, REST-Handling und Code-Style werden zentral in **[AGENTS.md](AGENTS.md)** gepflegt.
+Dies stellt sicher, dass sowohl menschliche Entwickler als auch KI-Assistenten nach denselben verifizierten Regeln arbeiten.
 
 ## Vor Einem Commit
 

@@ -55,12 +55,14 @@ Die vollstaendige Anleitung zur Einrichtung von Home Assistant, den lokalen Secr
 3. Baue und flashe die Firmware:
 
    ```sh
-   pio run -t upload --upload-port COM8
-   pio device monitor --port COM8 --baud 115200
+   pio device list
+   pio run -t upload --upload-port <COMx>
+   pio device monitor --port <COMx> --baud 115200
    ```
 
 Weitere Details zum REST-Preflight, erwarteten Entities und der **Fehlersuche** findest du in der [Setup-Anleitung](docs/setup.md).
 Fuer Details zum Datenfluss und der Komponenten-Aufteilung siehe die [Architektur-Dokumentation](docs/architecture.md).
+Die Firmware fragt stabile `sensor.core2_*`-Entities ab; die Zuordnung des aktuellen Solar-Quellsensors erfolgt im Home-Assistant-Paket.
 
 ### Im Alltag nutzen
 

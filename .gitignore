@@ -2,3 +2,6 @@
 .vscode/
 include/secrets.h
 esphome/.esphome/
+.claude/
+.serena/
+CLAUDE.md
